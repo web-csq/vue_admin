@@ -1,0 +1,56 @@
+{
+  "name": "admin_app",
+  "version": "1.0.0",
+  "description": "学情分析系统",
+  "author": "陈胜强 吕西沙",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "dev": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "eslint --fix --ext .js,.vue src test/unit"
+  },
+  "dependencies": {
+    "@antv/data-set": "^0.10.2",
+    "@antv/g2": "^3.5.11",
+    "@babel/core": "^7.7.5",
+    "@babel/preset-env": "^7.7.6",
+    "axios": "^0.19.0",
+    "bootstrap": "^3.4.1",
+    "element-ui": "^2.13.0",
+    "file-saver": "^2.0.2",
+    "iview": "^3.3.3",
+    "jquery": "^3.4.1",
+    "js-cookie": "^2.2.1",
+    "particles.js": "^2.0.0",
+    "popper.js": "^1.16.0",
+    "qs": "^6.9.1",
+    "screenfull": "^5.0.0",
+    "vue": "^2.6.6",
+    "vue-router": "^3.0.1",
+    "vuex": "^3.0.1",
+    "xlsx": "^0.15.3"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.5.0",
+    "@vue/cli-service": "^3.12.1",
+    "babel-plugin-transform-remove-console": "^6.9.4",
+    "babel-plugin-transform-remove-strict-mode": "0.0.2",
+    "core-js": "^2.6.11",
+    "node-sass": "^4.13.0",
+    "sass-loader": "^8.0.0",
+    "script-loader": "^0.7.2",
+    "terser-webpack-plugin": "^2.3.0",
+    "vue-template-compiler": "^2.5.21"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}

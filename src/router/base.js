@@ -1,0 +1,37 @@
+export const baseAdminRoutes=[
+    {
+        path:"/addSchool",
+        name:"addSchool",
+        component:()=>import("@/views/base/admin/AddSchool.vue")
+    },
+    {
+        path:"/schoolList",
+        name:"schoolList",
+        component:()=>import("@/views/base/admin/SchoolList.vue")
+    },
+    {
+        path:"/schoolInfo",
+        name:"schoolInfo",
+        component:()=>import("@/views/base/admin/SchoolInfo.vue")
+    },
+    {//校级-管理员----设置年级信息
+        path:"/setInfo",
+        name:"setInfo",
+        component:()=>import("@/views/base/school/SetInfo.vue")
+    },
+    {//校级管理员-查看年级详情
+        path:"/gradeInfo",
+        name:"gradeInfo",
+        component:()=>import("@/views/base/school/GradeInfo.vue")
+    },
+    {//校级管理员-教师信息
+        path:"/teaManage",
+        name:"teaManage",
+        component:()=>import("@/views/base/school/TeaManage.vue")
+    },
+    {// 班级管理
+        path:"/classManage",
+        name:"classManage",
+        component:()=>import("@/views/base/grade/ClassManage.vue")
+    }
+]
