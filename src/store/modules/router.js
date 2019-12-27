@@ -52,7 +52,37 @@ export default{
               type:"md-add",
               name: 's_total_reg_stu_class', // 要跳转的路由名称 不是路径
               text:"总分退步学生班级",
-            }
+            },
+            {
+              type:"md-add",
+              name: 's_total_score_excellent_stu', // 要跳转的路由名称 不是路径
+              text:"总分优秀学生班级",
+            },
+            {
+              type:"md-add",
+              name: 's_total_score_quasi_excellent_stu', // 要跳转的路由名称 不是路径
+              text:"总分准优秀学生班级",
+            },
+            {
+              type:"md-add",
+              name: 's_total_score_good_stu', // 要跳转的路由名称 不是路径
+              text:"总分良好学生班级",
+            },
+            {
+              type:"md-add",
+              name: 's_total_score_quasi_good_stu', // 要跳转的路由名称 不是路径
+              text:"总分准良好学生班级",
+            },
+            {
+              type:"md-add",
+              name: 's_total_score_pass_stu', // 要跳转的路由名称 不是路径
+              text:"总分及格学生班级",
+            },
+            {
+              type:"md-add",
+              name: 's_total_score_hard_stu', // 要跳转的路由名称 不是路径
+              text:"总分学困学生班级",
+            },
           ]
       },
       {
@@ -79,35 +109,66 @@ export default{
                   name: 'c_class_subject_analyze',
                   text: '班级学科分析'
               }
-          ]
-      },
-      {
-        text: '学生分析报告',
-        type: 'md-contacts',
-        children: [
-            {
-                type: 'ios-person',
-                name: 'stu_total_ranking',
-                text: '总分与名次'
-            },
-            {
-              type: 'ios-person',
-              name: 'stu_subject_analyze',
-              text: '学科分析'
-            },
-            {
-              type: 'ios-person',
-              name: 'stu_subject_trand',
-              text: '学科走势'
-            },
-            {
-              type: 'ios-person',
-              name: 'stu_score_forecast',
-              text: '成绩预测'
-            }
-        ]
-    }
-    ],
+            ]
+          },
+          {
+            text: '学生分析报告',
+            type: 'md-contacts',
+            children: [
+                {
+                    type: 'ios-person',
+                    name: 'stu_total_ranking',
+                    text: '总分与名次'
+                },
+                {
+                  type: 'ios-person',
+                  name: 'stu_subject_analyze',
+                  text: '学科分析'
+                },
+                {
+                  type: 'ios-person',
+                  name: 'stu_group_subject',
+                  text: '学科组合分析'
+                },
+                {
+                  type: 'ios-person',
+                  name: 'stu_subject_trand',
+                  text: '学科走势'
+                },
+                {
+                  type: 'ios-person',
+                  name: 'stu_score_forecast',
+                  text: '成绩预测'
+                }
+            ]
+          },
+          {
+            text:"学科分析报告",
+            type:"md-help-buoy",
+            children:[
+              {
+                type:"ios-leaf-outline",
+                name:"subject_total_distribution",
+                text:"学科成绩总体分布"
+              },
+              {
+                type:"ios-leaf-outline",
+                name:"subject_class_comparison",
+                text:"学科成绩班级对比"
+              },
+              {
+                type:"ios-leaf-outline",
+                name:"subject_question_score",
+                text:"学科小题得分分布"
+              },
+              {
+                type:"ios-leaf-outline",
+                name:"subject_question_score_class",
+                text:"学科小题得分班级统计"
+              }
+            ]
+          }
+        ],
   },
   mutations:{
     setMenus(state, items) {

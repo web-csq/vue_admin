@@ -1,7 +1,7 @@
 <template>
   <div>
-       <div class="top" style="padding:0 20px 0 0">
-          <div>
+       <div class="top" style="padding:0 20px 0 20px">
+         <!-- <div>
             区域选择：<Cascader 
                         class="cascader" 
                         :change-on-select="true" 
@@ -12,7 +12,7 @@
                         v-model="city_value"
                         @on-change="city_change"
                         ></Cascader>
-          </div>
+          </div>-->
           <div>
             按名称查找：<Input suffix="ios-search"
                               autocomplete="on" 
@@ -27,7 +27,7 @@
                               />
           </div>
         </div>
-        <div class="tab-container"> 
+        <div class="tab-container" style="margin-left:20px"> 
           <Table 
             width="auto" 
             :border="true"
@@ -38,7 +38,7 @@
             :loading="tableLoading"
             ref="table">
             <template slot-scope="{ row, index }" slot="action">
-                <Button type="primary" size="small" style="margin-right: 5px" @click="goAnalyze(index)">分析</Button>
+                <Button type="primary" size="small" style="margin-right: 5px" @click="goAnalyze(row)">查看报表</Button>
                 <Button type="error" size="small" @click="remove(index)">设置</Button>
                 
             </template>
@@ -48,7 +48,14 @@
         <!-- 分页 -->
         <div class="line"></div>
         <div class="cent">
-          <Page :total="100" :page-size="10" @on-change="pageChange" show-elevator />
+          <Page 
+            :total="count" 
+            :page-size="10" 
+            :current="pageNum"
+            @on-change="pageChange" 
+            show-total
+            show-elevator 
+          />
         </div>
         
       
@@ -58,12 +65,16 @@
 </template>
 
 <script>
-
+import { listExamBySchoolId } from "@/api/test"
+import { listClass } from "@/api/user"
+import { mapMutations, mapState } from "vuex"
+let _this;
 export default {
   name:"testmanager",
   data(){
     return{
-      
+        count:0,
+        pageNum:1,
           citys:[{
                 value: 'beijing',
                 label: '北京',
@@ -117,21 +128,22 @@ export default {
           columns:[
             {
               "title": "考试名称",
-              "key": "examName",
+              "key": "name",
+              "width":200
             },
             {
               "title": "科目",
-              "key": "subject",
+              "key": "subjectLists"
             },
             {
-              "title": "年级",
-              "key": "grade",
+              "title": "状态",
+              "key": "status",
               'width':120
             },
             {
               "title": "考试时间",
-              "key": "examTime",
-              "width":100
+              "key": "createTime",
+              "width":120
             },
             {
               "title": "操作",
@@ -141,61 +153,20 @@ export default {
               "width":150
             }
           ],
-          
-          tableData: [
-              {
-                  grade: '高一',
-                  examName: '第一次月考',
-                  examTime: '2016-10-03',
-                  subject:["语文","数学"].join(" | ")
-              },
-              {
-                  grade: '高二',
-                  examName: '第二次月考',
-                  examTime: '2016-10-01'
-              },
-              {
-                  grade: '高三',
-                  examName: '模拟考试',
-                  examTime: '2016-10-02'
-              },
-              {
-                  grade: '初一',
-                  examName: '期中考试',
-                  examTime: '2016-10-04'
-              },
-              {
-                  grade: '高一',
-                  examName: '第一次月考',
-                  examTime: '2016-10-03',
-                  subject:["语文","数学"].join(" | ")
-              },
-              {
-                  grade: '高二',
-                  examName: '第二次月考',
-                  examTime: '2016-10-01'
-              },
-              {
-                  grade: '高三',
-                  examName: '模拟考试',
-                  examTime: '2016-10-02'
-              },
-              {
-                  grade: '初一',
-                  examName: '期中考试',
-                  examTime: '2016-10-04'
-              }
-          ]
+          tableData: []
         }
 
       },
       methods:{
+        ...mapMutations("app",["ADDANALYZEEXAM","SETCLASSLIST"]),
         cancel(){
 
         },
         
         pageChange(value){
-          console.log(value)
+          console.log(value);
+          this.pageNum = value;
+          this.listExamBySchoolId();
         },
         filterMethod (value, option) {
           return option.indexOf(value) !== -1;
@@ -209,9 +180,19 @@ export default {
         city_change(value){
           console.log(value)
         },
-        goAnalyze(index){
-          console.log(index)
+        goAnalyze(row){
+          this.ADDANALYZEEXAM(row);
+          listClass({
+            gradeId:row.gradeId,
+            schoolId:row.schoolId,
+            term:this.term,
+            year:this.year
+          }).then(res=>{
+            if(res.code==="0000")
+            _this.SETCLASSLIST(res.data)
+          })
           this.$router.push("/")
+          
         },
         remove(index){
           
@@ -222,16 +203,54 @@ export default {
         }
       },
       computed:{
-
+        ...mapState({
+          term:state=>state.user.term,
+          year:state=>state.user.year
+        })
+        
       },
       components:{
 
       },
-    
+      created(){
+        _this=this
+        listExamBySchoolId({
+          status:2,
+          pageNum:this.pageNum,
+          pageSize:10
+        }).then(res=>{
+          if(res.code==="0000"){
+            if(res.count > 0){
+              _this.tableData=res.data;
+              for(let item of _this.tableData){
+                item.subjectLists=new Array();
+                for(let items of item.subjectList){
+                  item.subjectLists.push(items.subjectName)
+                }
+                item.subjectLists= item.subjectLists.join("　|　")
+                item.createTime= item.createTime.substring(0,10)
+                switch(item.status){
+                    case 0:
+                      item.status="未上传";
+                      break;
+                    case 1:
+                      item.status="未分析";
+                      break;
+                    case 2:
+                      item.status="已分析";
+                      break;
+                  }
+              }
+            }
+            _this.count=res.count
+          
+          }
+        })
+      },
   
-  components:{
+      components:{
 
-  }
+      }
 }
 </script>
 

@@ -38,5 +38,35 @@ export const schoolRoutes={
     path:"s_total_reg_stu_class",
     name:"s_total_reg_stu_class",
     component:()=>import("@/views/SchoolExamAnalyze/Total_regress_student_class.vue")
-  }
+  },
+  "s_total_score_excellent_stu":{//总分优秀学生班级分布图
+    path:"s_total_score_excellent_stu",
+    name:"s_total_score_excellent_stu",
+    component:()=>import("@/views/SchoolExamAnalyze/Total_score_excellent_stu.vue")
+  },
+  "s_total_score_quasi_excellent_stu":{//总分准优秀学生班级分布图
+    path:"s_total_score_quasi_excellent_stu",
+    name:"s_total_score_quasi_excellent_stu",
+    component:()=>import("@/views/SchoolExamAnalyze/Total_score_quasi_excellent_stu.vue")
+  },
+  "s_total_score_good_stu":{//总分良好学生班级分布图
+    path:"s_total_score_good_stu",
+    name:"s_total_score_good_stu",
+    component:()=>import("@/views/SchoolExamAnalyze/Total_score_good_stu.vue")
+  },
+  "s_total_score_quasi_good_stu":{//总分准良好学生班级分布图
+    path:"s_total_score_quasi_good_stu",
+    name:"s_total_score_quasi_good_stu",
+    component:()=>import("@/views/SchoolExamAnalyze/Total_score_quasi_good_stu.vue")
+  },
+  "s_total_score_pass_stu":{//总分及格学生班级分布图
+    path:"s_total_score_pass_stu",
+    name:"s_total_score_pass_stu",
+    component:()=>import("@/views/SchoolExamAnalyze/Total_score_pass_stu.vue")
+  },
+  "s_total_score_hard_stu":{//总分学困学生班级分布图
+    path:"s_total_score_hard_stu",
+    name:"s_total_score_hard_stu",
+    component:()=>import("@/views/SchoolExamAnalyze/Total_score_hard_stu.vue")
+  },
 }

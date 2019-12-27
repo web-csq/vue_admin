@@ -3,11 +3,11 @@
         <div class="container">
             <p class="title">学情分析系统</p>
             <div class="input-c">
-                <Input prefix="ios-contact" v-model="account" placeholder="用户名" clearable @on-blur="verifyAccount"/>
+                <Input prefix="ios-contact" v-model="account" @keydown.enter.native="submit" placeholder="用户名" clearable @on-blur="verifyAccount"/>
                 <p class="error">{{accountError}}</p>
             </div>
             <div class="input-c">
-                <Input type="password" v-model="pwd" prefix="md-lock" placeholder="密码" clearable @on-blur="verifyPwd"/>
+                <Input type="password" v-model="pwd" prefix="md-lock" @keydown.13.native="submit" placeholder="密码" clearable @on-blur="verifyPwd"/>
                 <p class="error">{{pwdError}}</p>
             </div>
             <Button :loading="isShowLoading" class="submit" type="primary" @click="submit">登录</Button>
@@ -22,12 +22,12 @@
 import Particles from '@/components/Particles/index'
 import WebFooter from "./WebFooter/index"
 import { login } from "@/api/user"
-import { mapState,mapMutations } from "vuex"
+import { mapState,mapMutations, mapActions } from "vuex"
 export default {
     name: 'login',
     data() {
         return {
-            account: 'admin',
+            account: 'soiiu',
             pwd: '123456',
             accountError: '',
             pwdError: '',
@@ -46,13 +46,15 @@ export default {
         }
     },
     methods: {
-      ...mapMutations("app",["ADDPERMISSIONLIST"]),
+    ...mapMutations("app",["ADDPERMISSIONLIST"]),
+    ...mapMutations("user",["GETUSER","GETTERM","GETYEAR"]),
+    ...mapActions("user",["getSchool"]),
         verifyAccount(e) {
             if (this.account==="") {
                 this.accountError = '账号不能为空';
                 return false
             }else{
-              return true
+            return true
             }
         },
         verifyPwd(e) {
@@ -60,37 +62,45 @@ export default {
                 this.pwdError = '密码不能小于6位';
                 return false
             }else{
-              return true
+                return true
             }
         },
-        register() {
-           
+        register() {//注册
+            this.$router.push('register');
+            console.log(111);
         },
         forgetPwd() {
             
         },
         async submit() {
-          this.isShowLoading = true;
-          if(this.verifyAccount()&&this.verifyPwd()){
+        this.isShowLoading = true;
+            if(this.verifyAccount()&&this.verifyPwd()){
             login({
-              username:this.account,
-              password:this.pwd
+                username:this.account,
+                password:this.pwd
             }).then(res=>{
-              this.isShowLoading = false;
-              let data=res.data;
-               sessionStorage.setItem('userImg',data.user.pic);
-               sessionStorage.setItem('userName', data.user.trueName);
-               sessionStorage.setItem('token', 'loginin');
-               this.ADDPERMISSIONLIST(data.permissionList);
-               this.$router.push({path: '/moduleshow'})
-               
+                this.isShowLoading = false;
+                let data=res.data;
+                console.log(data)
+                sessionStorage.setItem('userImg',data.user.pic);
+                sessionStorage.setItem('userName', data.user.truename);
+                sessionStorage.setItem('token', 'loginin');
+                this.ADDPERMISSIONLIST(data.permissionList);
+                this.GETUSER(data.user);
+                this.GETYEAR(data.year);
+                this.GETTERM(data.term);
+                if(data.school) this.getSchool(data.school)
+                this.$router.push({path: '/moduleshow'})
+            
+            }).catch(err=>{
+                this.isShowLoading = false;
             });
-          }else{
+        }else{
             this.verifyAccount();
             this.verifyPwd();
             this.isShowLoading = false;
-          }
-          
+        }
+        
             
         }
     },
@@ -115,7 +125,7 @@ export default {
     text-align: center;
     border-radius: 10px;
     padding: 30px;
-    margin-top:-10rem;
+    margin-top:0rem;
     position: relative;
     z-index: 2;
 }

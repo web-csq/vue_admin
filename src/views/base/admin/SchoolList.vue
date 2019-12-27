@@ -2,6 +2,16 @@
     <div>
         <div class="boxBottom">
             <Button type="primary" size="small" @click="addSchool">添加学校</Button>
+            <!-- <div class="cascader stylus">
+                区域选择:
+                <Cascader class="cascader" 
+                :data="cityList" 
+                size='small' 
+                v-model="cityValue" 
+                trigger="hover" 
+                @on-change="selectedCity"
+                ></Cascader>
+            </div> -->
         </div>
         <!--学校列表-->
         <Table
@@ -11,18 +21,19 @@
         >
             <!--操作-->
             <template slot-scope="{ row, index }" slot="action">
-                <Button type="info" size="small"  @click="lookSchool(index)">查看</Button>
-                <Button type="success" size="small" style="margin: 0 5px" @click="updateSchool(index)">修改</Button>
-                <Button type="primary" size="small" @click="schoolAdmin(index)">添加校级管理员</Button>
+                <Button type="info" size="small"  @click="lookSchool(row,index)">查看</Button>
+                <Button type="success" size="small" style="margin: 0 5px" @click="updateSchool(row)">修改</Button>
+                <Button type="primary" size="small" @click="schoolAdmin(row)">添加校级管理员</Button>
             </template>
         </Table>
+        <!-- :page-size-opts="[10, 20, 30, 40]" show-sizer -->
         <Page  class="setPage"
             :total="page.total" 
             :page-size="page.pageSize"
             :current="page.pageNum"
-            :page-size-opts="[10, 20, 30, 40]"
+            
             :placement="'top'"
-            show-sizer
+            
             show-total
             show-elevator
             @on-change="nextPageNum"
@@ -36,8 +47,8 @@
         @on-ok="ok"
         @on-cancel="cancel">
             <Form  ref="formValidate" :model="formItem" :rules="ruleValidate" :label-width="80">
-                <FormItem label="姓名" prop="name">
-                    <Input v-model="formItem.name" placeholder="" />
+                <FormItem label="姓名" prop="truename">
+                    <Input v-model="formItem.truename" placeholder="" />
                 </FormItem>
                 <FormItem label="用户名" prop="users">
                     <Input v-model="formItem.users" placeholder="" />
@@ -46,15 +57,15 @@
                     <Input v-model="formItem.pwd" type="password" placeholder="" />
                 </FormItem>
                 <FormItem label="手机号">
-                    <Input v-model="formItem.phone" type="number" placeholder="" />
+                    <Input v-model="formItem.phone" type="tel" placeholder="" />
                 </FormItem>
-                <FormItem label="身份证号">
-                    <Input v-model="formItem.card"  placeholder="" />
+                <FormItem label="邮箱">
+                    <Input v-model="formItem.email"  type="email" placeholder="" />
                 </FormItem>
                 <FormItem label="性别">
                     <RadioGroup v-model="formItem.sexRadio">
-                        <Radio label="0">男</Radio>
-                        <Radio label="1">女</Radio>
+                        <Radio label="0">女</Radio>
+                        <Radio label="1">男</Radio>
                     </RadioGroup>
                 </FormItem>
             </Form>
@@ -63,17 +74,19 @@
 </template>
 
 <script>
+import { listSchool, enableOrDisableSchools, insertSchoolAdministrator } from "@/api/base"
+import { async } from 'q';
 export default {
     name:'schoolList',
     data(){
         return{
-            loading:true,
             addAdminModal:false,
             switch1: false,
+            loading:true,
             page:{
                 pageNum:1,
                 pageSize:10,
-                total:100
+                total:0,
             },//分页
             columns1: [
                 {
@@ -90,19 +103,19 @@ export default {
                 },
                 {
                     title: '电话',
-                    key: 'phones',
+                    key: 'phone',
                     align: 'center',
                     minWidth: 120
                 },
                 {
                     title: '联系人',
-                    key: 'userName',
+                    key: 'contactPerson',
                     align: 'center',
                     minWidth: 100
                 },
                 {
                     title: '开启/禁用',
-                    key: 'status',
+                    key: 'enabled',
                     align: 'center',
                     minWidth:  70,
                     render:(h, params) => {
@@ -110,7 +123,7 @@ export default {
                             h('i-switch', { //数据库1是已处理，0是未处理
                                 props: {
                                     type: 'primary',
-                                    value: params.row.status === 1  //控制开关的打开或关闭状态，官网文档属性是value
+                                    value: params.row.enabled === true  //控制开关的打开或关闭状态，官网文档属性是value
                                 },
                                 scopedSlots:{
                                     open:() => h('span','开启'),
@@ -122,9 +135,9 @@ export default {
                                 },
                                 on: {
                                     'on-change': (value) => {//触发事件是on-change,用双引号括起来，
-                                        console.log(value);
-                                        console.log(params);
-                                        this.switch(params.index) //params.index是拿到table的行序列，可以取到对应的表格值
+                                        // console.log(value);
+                                        // console.log(params);
+                                        this.switch(value,params.row.id) //params.index是拿到table的行序列，可以取到对应的表格值
                                     }
                                 }
                             }, )
@@ -139,46 +152,18 @@ export default {
                 }
                 
             ],
-            schoolArr: [
-                {
-                    id:7,
-                    name: '实验高中',
-                    age: 18,
-                    userName: '李老师',
-                    phones: '153290000000'
-                },
-                {
-                    id:8,
-                    name: 'Jim Green',
-                    age: 24,
-                    userName: '李老师',
-                    phones: '2016-10-01'
-                },
-                {
-                    id:9,
-                    name: 'Joe Black',
-                    age: 30,
-                    userName: '涨三周',
-                    phones: '2016-10-02'
-                },
-                {   
-                    id:10,
-                    name: '五高',
-                    age: 26,
-                    userName: '李老师',
-                    phones: '2016-10-04'
-                }
-            ],
+            schoolArr: [],
+            schoolId:0,
             formItem:{
-                name:'',//名字
+                truename:'',//名字
                 users:'',//用户名
                 pwd:'',//密码
-                card:'',//身份证号
+                email:'',//邮箱
                 phone:'',//手机号
                 sexRadio:'0',//性别
             },
             ruleValidate:{
-                name:[
+                truename:[
                     { required: true, message: '姓名不能为空', trigger: 'blur' }
                 ],
                 users:[
@@ -187,58 +172,173 @@ export default {
                 pwd:[
                     { required: true, message: '密码不能为空', trigger: 'blur' }
                 ]
-            }
+            },
+            cityId:'',
+            cityList:[
+                {
+                    value: 'beijing',
+                    label: '北京',
+                    children: [
+                        {
+                            value: 'gugong',
+                            label: '故宫'
+                        },
+                        {
+                            value: 'tiantan',
+                            label: '天坛'
+                        },
+                        {
+                            value: 'wangfujing',
+                            label: '王府井'
+                        }
+                    ]
+                },
+                {
+                    value: 'jiangsu',
+                    label: '江苏',
+                    children: [
+                        {
+                            value: 'nanjing',
+                            label: '南京',
+                            children: [
+                                {
+                                    value: 'fuzimiao',
+                                    label: '夫子庙',
+                                }
+                            ]
+                        },
+                        {
+                            value: 'suzhou',
+                            label: '苏州',
+                            children: [
+                                {
+                                    value: 'zhuozhengyuan',
+                                    label: '拙政园',
+                                },
+                                {
+                                    value: 'shizilin',
+                                    label: '狮子林',
+                                }
+                            ]
+                        }
+                    ],
+                }
+            ],
+            cityValue:[],
         }
     },
     methods:{
-        getSchoolListReq(){//请求学校列表接口
-            setTimeout(() => {
-                this.loading = !this.loading;//如若数据返回则 ，加载消失
-            },1000)
+        async getSchoolListReq(pageNum,pageSize){//请求学校列表接口,/school/listSchool
+            listSchool({
+                pageNum:pageNum,
+                pageSize: pageSize
+            }).then( res => {
+                // console.log('学校列表',res);
+                this.loading = false;
+                if(res.code == "0000"){
+                    if(res.count > 0){
+                        this.page.total = res.count
+                        this.schoolArr = res.data
+                    }
+                }
+            })
+
         },
-        lookSchool(index){//查看学校
-            this.$router.push('schoolInfo');
-            console.log('查看学校',index);
+        lookSchool(row,index){//查看学校
+            if(row.enabled){
+                this.$router.push({path:'schoolInfo',query:{id: row.id}})
+            }else{
+                this.$Message.warning('亲，该学校处于禁用状态');
+            }
+            
         },
-        updateSchool(index){//修改学校
-            this.$Message.info('修改学校页面与添加学校页面类似一致');
-            console.log('修改学校',index);
+        updateSchool(row){//修改学校
+            // console.log('修改学校',row);
+            this.$router.push({path:'updataSchool',query:{
+                row: row
+            }})
         },
-        schoolAdmin(index){//添加校级管理员
-            this.clearModel('formValidate');
-            console.log('添加校级管理员',index);
-            this.addAdminModal = !this.addAdminModal;
-            this.ok(index);
+        schoolAdmin(row){//添加校级管理员
+            if(row.enabled){
+                this.clearModel('formValidate');
+                console.log('添加校级管理员',row.id);
+                this.schoolId = row.id;
+                this.addAdminModal = !this.addAdminModal;
+            }else{
+                this.$Message.warning('亲，该学校处于禁用状态');
+            }
         },
-        switch(idx){//开关
-            console.log(11+idx);
+        async switch(value,schoolIdList){//开关
+            enableOrDisableSchools({
+                isEnable: value,
+                schoolIdList:schoolIdList
+            }).then( res => {
+                // console.log('开启或禁用学校',res)
+                if(res.code == "0000"){
+                    this.$message({
+                        message: (value ?'开启':'禁用') + res.message,
+                        type: 'success'
+                    });
+                    this.getSchoolListReq(this.page.pageNum,this.page.pageSize)
+                }else{
+                    this.$message.error(res.message);
+                }
+            })
         },
         nextPageNum(i){//页码改变的回调，返回改变后的页码
             this.page.pageNum = i;
-            // this.getSchoolListReq(i,this.page.pageSize);//刷新列表
+            this.loading = true;
+            this.getSchoolListReq(i,this.page.pageSize);//刷新列表
             console.log('当前页',this.page.pageNum);
         },
         nextPageSize(size){//切换每页条数时的回调，返回切换后的每页条数
             this.page.pageSize = size;
+            this.loading = true;
             console.log('每条数据',this.page.pageSize);
-            // this.getSchoolListReq(this.page.pageNum,size);//刷新列表
+            this.getSchoolListReq(this.page.pageNum,size);//刷新列表
         },
         addSchool(){
             this.$router.push('AddSchool');
         },
         ok(idx){//模态框 确定按钮
-
-            console.log('传递的参数',this.formItem.sexRadio);
+            this.addSchoolAdminReq();
         },
         cancel(){
 
         },
+        async addSchoolAdminReq(){
+            var obj = {};
+            obj.schoolId = this.schoolId;
+            obj.enabled = true;
+            obj.sex = this.formItem.sexRadio;
+            obj.truename = this.formItem.truename;
+            obj.username = this.formItem.users;
+            if(this.formItem.pwd == ''){
+                obj.password = 123456;
+            }else{
+                obj.password = this.formItem.pwd;
+            }
+            if(this.formItem.phone != ''){
+                obj.phone = this.formItem.phone;
+            }
+            insertSchoolAdministrator(obj).then( res => {
+                if (res.code == "0000") {
+                    this.$Message.info('校级管理员添加成功');
+                }
+            })
+        },
         clearModel(name){//重置模态框
             this.$refs[name].resetFields();
-        }
+        },
+        selectedCity(value,selectedData){//选择区域
+            console.log(value,selectedData);
+        },
     },
     mounted(){
-        this.getSchoolListReq();
+        this.getSchoolListReq(this.page.pageNum,this.page.pageSize);
+    },
+    created(){
+        
     }
 }
 </script>
@@ -252,5 +352,11 @@ export default {
     }
     .ivu-switch-checked:after{
         left: 32px;
+    }
+    .cascader{
+        display: inline-block;
+    }
+    .stylus{
+        margin-left: 10px;
     }
 </style>

@@ -1,20 +1,25 @@
 <template>
     <div>
-        年级级管理下的 --- 教师信息
-        <div>
-
+        <div class="boxBottom divBlock">
+            <!-- 筛选 -->
+            选择年级：<Select v-model="model3" style="width:100px" @on-change="selGradeID">
+                <Option :value="0" >全部</Option>
+                <Option v-for="item in getGradeList" :value="item.id" :key="item.id">{{ item.name }}</Option>
+            </Select>
+        </div>
+        <div class="divBlock">
             <!-- 上传文件 -->
             <Upload
-                style="display:inline-block;margin-right:10px;"
+                style="display:inline-block;margin: 0 10px;"
                 ref="upload"
                 :format ="['xlsx','xls']"
-                :data="uploadData"
+                name="file"
                 :before-upload="handleUpload"
                 :on-format-error="handleFormatError"
                 :on-error="handleError"
                 :on-success="handleSuccess"
-                
-                action="/url">
+                :with-credentials='true'
+                :action="baseURL+'/user/useExcelToImportTeachers'">
                 <Button icon="ios-cloud-upload-outline" type="primary">批量导入教师</Button>
             </Upload>
             <!-- <Button
@@ -23,32 +28,29 @@
                 type="primary"
                 @click="downloadFile('档案模板')"
             >下载模板</Button> -->
-            <Button
-                class=" right-10"
-                icon="ios-cloud-download"
-                type="primary"
-            >下载模板</Button>
-            <Button style="margin-left:10px;" @click="addStu">新增教师</Button>
+            <Button icon="ios-cloud-download"  type="primary">
+                <a style="color:#fff;"  href="https://soiiu-exam.oss-cn-beijing.aliyuncs.com/download/%E9%AB%98%E4%B8%AD%E6%95%99%E5%B8%88%E4%BF%A1%E6%81%AF%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF%EF%BC%88spss%EF%BC%89.xlsx">下载教师模板</a>    
+            </Button>
+            <!-- <Button style="margin-left:10px;" @click="addStu">新增教师</Button> -->
         </div>
-
+        
         <Table
         :columns="columns1"
         :data="schoolArr"
+        :loading='loading'
         >
             <!--操作-->
             <template slot-scope="{ row, index }" slot="action">
-                <Button type="info" size="small"  @click="updata(index,row)">修改信息</Button>
-                <Button type="success" size="small" style="margin: 0 5px" @click="overSet(index)">重置密码</Button>
-                <Button type="error" size="small" @click="remove(index)">删除</Button>
+                <!-- <Button type="info" size="small"  @click="updata(index,row)">修改信息</Button> -->
+                <Button type="info" size="small" style="margin: 0 5px" @click="overSet(row,index)">重置密码</Button>
+                <!-- <Button type="error" size="small" @click="remove(index)">删除</Button> -->
             </template>
         </Table>
         <Page  class="setPage"
             :total="page.total" 
             :page-size="page.pageSize"
             :current="page.pageNum"
-            :page-size-opts="[10, 20, 30, 40]"
             :placement="'top'"
-            show-sizer
             show-total
             show-elevator
             @on-change="nextPageNum"
@@ -109,47 +111,49 @@
 </template>
 
 <script>
+import { listUserByRoleIdAndPage, resetPassword, enableOrDisableUsers } from '@/api/base'
+import { getGradeListBySessions } from '@/assets/js/common.js'
+import { mapState } from "vuex";
+
 export default {
     name:"teaManage",
     data(){
         return {
+            loading:true,
             addStuModal:false,
             updataModal:false,//修改学生模态框
             page:{
                 pageNum:1,
                 pageSize:10,
-                total:100
+                total:0
             },//分页
-            uploadData:{//上传文件所须参数
-                merchantCode:'',
-            },
             columns1: [
                 {
-                    title: '学号',
+                    title: '编号',
                     key: 'id',
                     align: 'center',
                     width: 90
                 },
                 {
                     title: '姓名',
-                    key: 'name',
+                    key: 'truename',
                     align: 'center',
                     minWidth:200
                 },
                 {
-                    title: '班级',
-                    key: 'className',
-                    align: 'center',
-                    minWidth: 120
-                },
-                {
                     title: '账号',
-                    key: 'userName',
+                    key: 'username',
                     align: 'center',
                     minWidth: 120
                 },
                 {
-                    title: '是否可以',
+                    title: '年级',
+                    key: 'gradeName',
+                    align: 'center',
+                    minWidth: 120
+                },
+                {
+                    title: '用户状态',
                     key: 'status',
                     align: 'center',
                     minWidth:  70,
@@ -158,7 +162,7 @@ export default {
                             h('i-switch', { //数据库1是已处理，0是未处理
                                 props: {
                                     type: 'primary',
-                                    value: params.row.status === 1  //控制开关的打开或关闭状态，官网文档属性是value
+                                    value: params.row.enabled === true  //控制开关的打开或关闭状态，官网文档属性是value
                                 },
                                 scopedSlots:{
                                     open:() => h('span','开启'),
@@ -170,9 +174,9 @@ export default {
                                 },
                                 on: {
                                     'on-change': (value) => {//触发事件是on-change,用双引号括起来，
-                                        console.log(value);
-                                        console.log(params);
-                                        this.switch(params.index) //params.index是拿到table的行序列，可以取到对应的表格值
+                                        // console.log(value);
+                                        // console.log(params);
+                                        this.switch(value,params.row.id) //params.index是拿到table的行序列，可以取到对应的表格值
                                     }
                                 }
                             }, )
@@ -187,44 +191,7 @@ export default {
                 }
                 
             ],
-            schoolArr:[
-                {
-                    id:7,
-                    name: '李斯',
-                    className: '高一1班',
-                    userName: 'zhangsan1',
-                    gradeId: '1',
-                    classId:'1',
-                    status:1
-                },
-                {
-                    id:8,
-                    name: 'Jim Green',
-                    className: '高一1班',
-                    classId:'1',
-                    userName: 'zhangsan2',
-                    gradeId: '1',
-                    status:0
-                },
-                {
-                    id:9,
-                    name: 'Joe Black',
-                    className: '高一1班',
-                    userName: 'zhangsan3',
-                    gradeId: '3',
-                    status:1,
-                    classId:'2',
-                },
-                {   
-                    id:10,
-                    name: '张三仪',
-                    className: '高一1班',
-                    userName: 'zhangsan4',
-                    gradeId: '2',
-                    status:0,
-                    classId:'1',
-                }
-            ],
+            schoolArr:[],
             formItem:{
                 name:'',
                 sexRadio:'0',
@@ -249,19 +216,30 @@ export default {
                 phone:[{required:true , message: '手机号不能为空', trigger: 'blur' }],
                 subjectId:[{required:true ,message: '学科为必选项',}]
             },
+            schoolId:0,//学校ID
+            baseURL:'',
+            model3:'',//年级ID
+            getGradeList:[],
+            
         }
     },
     methods:{
+        selGradeID(){
+            this.loading = true;
+            this.getListUserByRoleIdAndPage();
+        },
         nextPageNum(i){//页码改变的回调，返回改变后的页码
+            this.loading = true;
             this.page.pageNum = i;
-            console.log('当前页',this.page.pageNum);
+            this.getListUserByRoleIdAndPage();
         },
-        nextPageSize(size){//切换每页条数时的回调，返回切换后的每页条数
+        nextPageSize(size){
+            this.loading = true;
             this.page.pageSize = size;
-            console.log('每条数据',this.page.pageSize);
+            this.getListUserByRoleIdAndPage();
         },
-        switch(idx){//开关
-            console.log(11+idx);
+        switch(value,userId){//开关
+            this.setEnableOrDisableUsers(value,userId);
         },
         remove(index){//删除
             console.log(index);
@@ -269,8 +247,8 @@ export default {
             this.$Message.success(resMessage);//删除成功
             // this.$Message.error('This is an error tip');//删除失败
         },
-        overSet(index){//重置密码
-            
+        overSet(row,index){//重置密码
+            this.setResetPassword(row.id);
         },
         updata(index,row){//修改信息
             console.log(row);
@@ -283,7 +261,7 @@ export default {
                 classId:row.classId,
                 
             }
-            console.log(this.stuItem);
+            // console.log(this.stuItem);
         },
         addStu(){//新增学生
             this.clearModel('formValidate');//重置模态框
@@ -306,7 +284,7 @@ export default {
         },
         /**上传文件 */
         handleFormatError(file){//上传格式失败
-            console.log(file);
+            // console.log(file);
             // var fileSize = file.size / 1024;//文件大小
             this.$Notice.warning({
                 title: '文件格式不正确',
@@ -315,20 +293,33 @@ export default {
             
         },
         handleUpload (file) {//上传前
-            console.log(file)
-            // return false;
+        },
+        preview(){
+            debugger
+            this.$refs.upload.fileList.splice(0);
         },
         handleSuccess(res,file){//上传成功，如果上传成功 clearFiles，清空文件
             console.log(res);
-            // if(res.status === 200){
-            //     this.$Message.success("数据导入成功！")
-            // }
-            this.$Message.success("数据导入成功！")
+            console.log(file);
+            if(res.code === "0000"){
+                if(res.count == 0){
+                    this.$Notice.error({
+                        title: '数据导入失败！',
+                    });
+                }else{
+                    this.$Message.success("数据导入成功！");
+                    this.getListUserByRoleIdAndPage();
+                }
+            }else{
+                this.$Message.error("数据导入失败！")
+            }
+            this.$refs.upload.fileList.splice(0);
+            // console.log(this.$refs.upload);
         },
         handleError(error,file){//上传失败
             this.$Message.error("数据导入失败！")
         },
-        downloadFile(name) {
+        downloadFile(name) {//下载模板
             let requestConfig = {
                 headers: {
                 "Content-Type": "application/json;application/octet-stream"
@@ -363,7 +354,63 @@ export default {
                 }
             });
         },
-    }
+        async getListUserByRoleIdAndPage(){//根据用户分析
+            this.schoolArr = [];
+            let roleObj = {};
+            roleObj.roleId = 3;
+            roleObj.schoolId = this.schoolId;
+            roleObj.pageNum = this.page.pageNum;
+            roleObj.pageSize = this.page.pageSize;
+            if(this.model3 != ''){
+                roleObj.gradeId = this.model3;
+            }
+            listUserByRoleIdAndPage(roleObj).then( res => {
+                // console.log(res);
+                this.loading = false;
+                if(res.code == "0000"){
+                    if(res.count > 0){
+                        this.schoolArr = res.data;
+                    }
+                    this.page.total = res.count;
+                }
+            })
+        },
+        async setResetPassword(userIds){
+            resetPassword({
+                userId:userIds
+            }).then( res => {
+                console.log( res )
+                if (res.code == "0000") {
+                    this.$Message.success(res.message)
+                }
+            })
+        },
+        async setEnableOrDisableUsers(enableds,userId){
+            enableOrDisableUsers({
+                isEnable: enableds,
+                userIdList: userId
+            }).then( res => {
+                if (res.code == "0000") {
+                    this.$Message.success(res.message)
+                }
+            })
+        }
+    },
+    mounted(){
+        
+    },
+    created(){
+        this.baseURL = process.env.VUE_APP_URL;
+        this.schoolId = this.school.id;
+        this.getListUserByRoleIdAndPage();
+        this.getGradeList = getGradeListBySessions(Number(this.school.section));
+        // console.log(this.getGradeList);
+    },
+    computed:{
+        ...mapState({
+            school:state=>state.user.school
+        })
+    },
 }
 </script>
 
@@ -375,6 +422,11 @@ export default {
     .boxBottom{
         margin-bottom: 10px;
     }
+    .divBlock{
+        display: inline-block;
+    }
+</style>
+<style >
     .ivu-switch-checked:after {
         left: 32px;
     }

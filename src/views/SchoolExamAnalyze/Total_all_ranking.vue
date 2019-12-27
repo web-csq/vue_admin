@@ -1,145 +1,30 @@
 <template>
   <div>
     <div class="top_ranking">
-      <div class="ranking-box">
+
+      <div class="ranking-box" v-for="(item,index) in rankingData" :key="item.userId">
         <div class="box-top">
           <img :src="imgHolder" alt="">
           <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第一</h6>
+            <h4>姓名：{{item.userName}}</h4>
+            <h6>年级：{{item.gradeName}}</h6>
+            <h6>排名：{{item.gradeRank}}</h6>
           </div>
         </div>
         <div class="tab-c">
-          <div id="d1"></div>
+          <div :id="'d'+(index+1)" ></div>
         </div>
       </div>
-      <div class="ranking-box">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第二</h6>
-          </div>
-        </div>
-        <div class="tab-c">
-          <div id="d2"></div>
-        </div>
-      </div>
-      <div class="ranking-box">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第三</h6>
-          </div>
-        </div>
-        <div class="tab-c">
-          <div id="d3"></div>
-        </div>
-      </div>
-      <div class="ranking-box">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第四</h6>
-          </div>
-        </div>
-        <div class="tab-c">
-          <div id="d4"></div>
-        </div>
-      </div>
-      <div class="ranking-box">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第五</h6>
-          </div>
-        </div>
-        <div class="tab-c">
-          <div id="d5"></div>
-        </div>
-      </div>
-      <div class="ranking-box">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第六</h6>
-          </div>
-        </div>
-        <div class="tab-c">
-          <div id="d6"></div>
-        </div>
-      </div>
-      <div class="ranking-box">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第七</h6>
-          </div>
-        </div>
-        <div class="tab-c">
-          <div id="d7"></div>
-        </div>
-      </div>
-      <div class="ranking-box">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第八</h6>
-          </div>
-        </div>
-        <div class="tab-c">
-          <div id="d8"></div>
-        </div>
-      </div>
-      <div class="ranking-box">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第九</h6>
-          </div>
-        </div>
-        <div class="tab-c">
-          <div id="d9"></div>
-        </div>
-      </div>
-      <div class="ranking-box">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：慧小海</h4>
-            <h6>年级：高一三班</h6>
-            <h6>排名：第十</h6>
-          </div>
-        </div>
-        <div class="tab-c">
-          <div id="d10"></div>
-        </div>
-      </div>
+  
+
     </div>
     
     <div class="tab-container">
       <div class="tab-title">总分排名</div>
-      <Table border :columns="columns" :data="data">
-        <template slot-scope="{ row, index }" slot="action">
-                <Button type="primary" size="small" style="margin-right: 5px" @click="goAnalyze(index)">分析</Button>
-               
-            </template>
+      <Table border :columns="columns" :data="data" :loading="loading">
+            <!-- <template slot-scope="{ row }" slot="action">
+                <Button type="primary" size="small" style="margin-right: 5px" @click="goAnalyze(row)">分析</Button>
+            </template> -->
       </Table>
     </div>
 
@@ -147,183 +32,25 @@
 </template>
 
 <script>
+import { listStudentExamResultInfo } from "@/api/schoolAnalyze"
+import { mapState } from "vuex"
+
 export default {
   name:"s_total_all_ranking",
   data(){
     return{
       imgHolder:"https://via.placeholder.com/95x95?text=75 x 75",
-      columns: [
-            {
-                title: '姓名',
-                key: 'name'
-            },
-            {
-                title: '年级',
-                key: 'class'
-            },
-            {
-                title: '总分',
-                key: 'total'
-            },
-            {
-                title: '语文',
-                key: 'chinese'
-            },
-            {
-                title: '数学',
-                key: 'math'
-            },
-            {
-                title: '英语',
-                key: 'english'
-            },
-            {
-                title: '物理',
-                key: 'physics'
-            },
-            {
-                title: '化学',
-                key: 'chemistry'
-            },
-            {
-                title: '生物',
-                key: 'biology'
-            },{
-              "title": "操作",
-              "key": "action",
-              "slot": 'action',
-              "align":"center",
-              "width":150
-            }
-        ],
-       data: [
-          {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          },
-           {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          },
-           {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          },
-           {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          },
-           {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          },
-           {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          },
-           {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          },
-           {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          },
-           {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          },
-           {
-              name:"惠小海",
-              class:"高一一班",
-              total:564,
-              chinese:166,
-              math:140,
-              english:115,
-              physics:89,
-              chemistry:69,
-              biology:75
-          }
-      ]
+      columns: [],
+      data: [],
+      loading:true,
+      rankingData:[],
     }
   },
   methods:{
-    goAnalyze(index){
-      console.log(index)
+    goAnalyze(row){
+      console.log(row)
     },
-    genarateCharts(id){
-      const data = [
-        { item: '语文', a: 140 },
-        { item: '数学', a: 145 },
-        { item: '英语', a: 144 },
-        { item: '物理', a: 70 },
-        { item: '化学', a: 60 },
-        { item: '生物', a: 68 }
-
-      ];
+    genarateCharts(id,data){
       const dv = new this.$DataSet.DataView().source(data);
       dv.transform({
         type: 'fold',
@@ -381,13 +108,110 @@ export default {
       chart.render();
     },
     genarate(){
-      for(let i=1;i<=10;i++){
-        this.genarateCharts("d"+i)
+      for(let i = 1;i <= this.rankingData.length;i++){
+        let data = [];
+        for(let j=0;j<this.rankingData[i-1].studentAnswerSheetList.length;j++){
+          let newObj = {};
+          let disName = this.rankingData[i-1].studentAnswerSheetList[j].subjectName;
+          let disLength = disName.length;
+          disName= disName.substring(disLength-2,disLength);
+          newObj.item = disName;
+          newObj.a = this.rankingData[i-1].studentAnswerSheetList[j].score;
+          data.push(newObj);
+        }
+        this.genarateCharts("d"+i,data);
       }
-    }
+    },
+    async getListStudentExamResultInfo(){//年级总排名
+      this.data = [];
+      this.columns = [];
+      listStudentExamResultInfo({
+        examId:this.examInfo.id,
+        gradeId: this.examInfo.gradeId,
+        schoolId: this.examInfo.schoolId
+      }).then( res => {
+        // console.log(res)
+        this.loading = false;
+        if (res.code == "0000") {
+          if (res.data != null) {
+            if (res.data.length > 0) {
+              this.columns.push(
+                {
+                    title: '姓名',
+                    key: 'userName',
+                    align:'center',
+                },
+                {
+                    title: '年级',
+                    key: 'gradeName',
+                    align:'center'
+                },
+                {
+                  title:'班级',
+                  key:'className',
+                  align:'center'
+                },
+                {
+                  title:'年级排名',
+                  key:'gradeRank',
+                  align:'center'
+                },
+                {
+                  title:'班级排名',
+                  key:'classRank',
+                  align:'center'
+                },
+                {
+                    title: '总分',
+                    key: 'score',
+                    align:'center'
+                }
+              )
+              for(let item of res.data[0].studentAnswerSheetList){
+                let obj={}
+                obj.title=item.subjectName.substring(2)
+                obj.key=item.subjectName.substring(2)
+                obj.align='center'
+                this.columns.push(obj)
+              }
+              for (let i in res.data) {
+                let newObj = {};
+                  if (i < 10) {
+                    this.rankingData.push(res.data[i]);
+                  }
+                  newObj.userName = res.data[i].userName;
+                  newObj.gradeName = res.data[i].gradeName;
+                  newObj.className = res.data[i].className;
+                  newObj.gradeRank = res.data[i].gradeRank;
+                  newObj.classRank = res.data[i].classRank;
+                  newObj.score = res.data[i].score;
+
+                for(let item of res.data[i].studentAnswerSheetList){
+                  newObj[item.subjectName.substring(2)]=item.score;
+                }
+                this.data.push(newObj);
+              }
+              
+            }
+          }
+        }
+      })
+    },
+  },
+  computed:{
+    ...mapState({
+      examInfo:state=>state.app.analyzeExam
+    })
   },
   mounted(){
-      this.genarate();
+      // console.log(this.examInfo)
+  },
+  created(){
+    this.getListStudentExamResultInfo();
+    
+  },
+  updated(){
+    this.genarate();
   }
 }
 </script>

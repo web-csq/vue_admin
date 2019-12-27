@@ -1,114 +1,89 @@
 <template>
   <div>
-    <div>
+    <div style="display:flex;align-items:center">
       选择班级：
-      <Select v-model="model" style="width:200px">
-          <Option v-for="item in classList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+      <Select v-model="model" style="width:200px;margin:0 20px 0 0" @on-change="setSection">
+          <Option v-for="item in classList" :value="item.id" :key="item.id">{{ item.name }}</Option>
       </Select>
+      分数间隔：
+      <div style="display:flex;width:80px">
+        <Input v-model="section"  size="small" placeholder="输入分数段" />
+      </div>
+      
+      <Button type="primary" style="margin:0 0 0 10px" :loading="btnLoading" @click="setSection" size="small">设置分段</Button>
     </div>
     <div class="chart-c">
       <div id="d1"></div>
     </div>
     <div class="tab-container">
      <div class="tab-title">总分年级分段报表</div>
-     <Table border :columns="columns" :data="data"></Table>
+     <Table border :columns="columns" :data="tableData"></Table>
     </div>
-    <h5 style="margin:20px 0 0 0;">
+    <!-- <h5 style="margin:20px 0 0 0;">
       诊断分析：<span style="color:#f10215">峰度大，成绩相比不稳定</span>
-    </h5>
+    </h5> -->
+
   </div>
 </template>
 
 <script>
-const data = [
-  { year: '0-100', sales: 100 },
-  { year: '101-200', sales: 62 },
-  { year: '201-300', sales: 22 },
-  { year: '301-400', sales: 25 },
-  { year: '401-500', sales: 100 },
-  { year: '501-600', sales: 33},
-  { year: '601-700', sales: 38 }
-];
+import { listStudentTotalScoreGroupByClass } from "@/api/classAnalyze"
+import { listClass } from "@/api/user"
+import { mapState } from 'vuex';
+let _this
 export default {
   name:"",
   data(){
     return{
-       classList: [
+      section:20,
+      btnLoading:false,
+      type:1,
+        model: '',
+        columns: [],
+        chartData:[],
+       tableData: [
           {
-              value: 'class1',
-              label: '高一一班'
-          },
-          {
-              value: 'class2',
-              label: '高一二班'
-          },
-          {
-              value: 'class3',
-              label: '高一三班'
-          },
-          {
-              value: 'class4',
-              label: '高一四班'
-          },
-          {
-              value: 'class5',
-              label: '高一五班'
-          },
-          {
-              value: 'class6',
-              label: '高一六班'
+            
           }
-        ],
-        model: 'class1',
-        columns: [
-            {
-                title: '最高分',
-                key: 'max'
-            },
-            {
-                title: '最低分',
-                key: 'min'
-            },
-            {
-                title: '平均数',
-                key: 'ads'
-            },
-            {
-                title: '中数',
-                key: 'middle'
-            },
-            {
-                title: '标准差',
-                key: 'norm'
-            },
-            {
-                title: '方差',
-                key: 'square'
-            },
-            {
-                title: '峰度',
-                key: 'peak'
-            },
-            {
-                title: '偏度',
-                key: 'diverge'
-            }
-        ],
-       data: [
-            {
-                max:351,
-                min:35,
-                ads:351,
-                middle:100,
-                norm:12,
-                square:56,
-                peak:79,
-                diverge:201,
-            }
         ]
     }
   },
-  mounted(){
+  methods:{
+    setSection(){
+      _this.btnLoading=true;
+      listStudentTotalScoreGroupByClass({
+        classId:_this.model,
+        examId:this.examInfo.id,
+        section:_this.section
+      }).then(res=>{
+        if(res.code==="0000"){
+          if(res.data.length===0) _this.$message.error("暂无数据")
+          let list=[];
+          _this.columns=[{
+                title: '分段',
+                key: 'subsc'
+            }]
+          _this.tableData=[];
+          let obj2={subsc:"数量"}
+          for(let item of res.data){
+            let obj={},obj1={}
+            obj.year=item.name;
+            obj["数量"]=item.count;
+            obj1.title=item.name;
+            obj1["key"]=item.name
+            obj2[item.name]=item.count
+            list.push(obj)
+            _this.columns.push(obj1)
+            
+          }
+          console
+          _this.tableData.push(obj2)
+          _this.initCharts(list,_this.type)
+          _this.type++
+        }
+      })
+    },
+    initCharts(data,type){
       const chart = new this.$G2.Chart({
         container: 'd1',
         forceFit: true,
@@ -130,9 +105,46 @@ export default {
           }
         }
       });
-      chart.interval().position('year*sales');
+
+      if(type==1){
+        chart.interval().position('year*数量');
+        chart.render();
+
+        chart.source(data);
+      }else{
+       
+        chart.interval().position('year*数量');
+        chart.changeData(data);
+         _this.$nextTick(()=>{
+           if(document.getElementById("d1").children.length>1){
+             document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
+           }
+        })
+      }
+      _this.btnLoading=false;
+        
       
-      chart.render();
+      
+     
+    }
+  },
+  computed:{
+    ...mapState({
+      examInfo:state=>state.app.analyzeExam,
+      term:state=>state.user.term,
+      year:state=>state.user.year,
+      classList:state=>state.app.classList
+    })
+  },
+  created(){
+    _this=this
+    _this.model=_this.classList[0].id
+    _this.setSection();
+   
+    
+  },
+  mounted(){
+    
   }
 }
 </script>

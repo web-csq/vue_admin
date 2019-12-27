@@ -5,9 +5,34 @@ export const baseAdminRoutes=[
         component:()=>import("@/views/base/admin/AddSchool.vue")
     },
     {
+        path:"/updataSchool",
+        name:"updataSchool",
+        component:()=>import("@/views/base/admin/UpdataSchool.vue")
+    },
+    {
         path:"/schoolList",
         name:"schoolList",
         component:()=>import("@/views/base/admin/SchoolList.vue")
+    },
+    {
+        path:"/addAdmin",
+        name:"addAdmin",
+        component:()=>import("@/views/base/admin/AddAdmin.vue")
+    },
+    {// 省 管理员，
+        path:"/adminProList",
+        name:"adminProList",
+        component:()=>import("@/views/base/admin/AdminProList.vue")
+    },
+    {// 市 管理员，
+        path:"/adminCityList",
+        name:"adminCityList",
+        component:()=>import("@/views/base/admin/AdminCityList.vue")
+    },
+    {// 区/县 管理员，
+        path:"/adminCountryList",
+        name:"adminCountryList",
+        component:()=>import("@/views/base/admin/AdminCountryList.vue")
     },
     {
         path:"/schoolInfo",
@@ -29,9 +54,29 @@ export const baseAdminRoutes=[
         name:"teaManage",
         component:()=>import("@/views/base/school/TeaManage.vue")
     },
+    {//校级管理员-学生信息
+        path:"/stuManage",
+        name:"stuManage",
+        component:()=>import("@/views/base/school/StuManage.vue")
+    },
+    {//校级管理员-添加角色
+        path:"/addRole",
+        name:"addRole",
+        component:()=>import("@/views/base/school/AddRole.vue")
+    },
     {// 班级管理
         path:"/classManage",
         name:"classManage",
         component:()=>import("@/views/base/grade/ClassManage.vue")
+    },
+    {//个人设置
+        path:"/personal",
+        name:"personal",
+        component:()=>import("@/views/base/Personal.vue")
+    },
+    {//注册
+        path:"/register",
+        name:"register",
+        component:()=>import("@/views/base/Register.vue")
     }
 ]

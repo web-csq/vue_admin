@@ -12,134 +12,119 @@
 </template>
 
 <script>
+import { selectGradeListClassAvgScoreOrHighLowScore } from "@/api/schoolAnalyze"
+import { mapState } from "vuex"
+
 export default {
   name:"s_class_height_low",
   data(){
     return{
       columns: [
             {
-                title: '分值',
-                key: 'section'
+                title: '班级',
+                key: 'className',
+                align:'center'
             },
             {
-                title: '高一一班',
-                key: 'classOne'
+              title: '最高分',
+              key: 'maxScore',
+              align:'center'
             },
             {
-                title: '高一二班',
-                key: 'classTwo'
-            },
-            {
-                title: '高一三班',
-                key: 'classThree'
-            },
-            {
-                title: '高一四班',
-                key: 'classFour'
-            },
-            {
-                title: '高一五班',
-                key: 'classFive'
-            },
-            {
-                title: '高一六班',
-                key: 'classSix'
-            },
-            {
-                title: '高一七班',
-                key: 'classSeven'
-            },
-            {
-                title: '高一八班',
-                key: 'classEight'
+              title: '最低分',
+              key: 'minScore',
+              align:'center'
             }
         ],
-       data: [
-          {
-              section:"最高分",
-              classOne:44,
-              classTwo:23.5,
-              classThree:66,
-              classFour:50,
-              classFive:15,
-              classSix:36,
-              classSeven:75,
-              classEight:56
-          },
-           {
-              section:"最低分",
-              classOne:44,
-              classTwo:23.5,
-              classThree:66,
-              classFour:50,
-              classFive:15,
-              classSix:36,
-              classSeven:75,
-              classEight:56
-          }
-      ]
+      data: [],
+      chartList:[],
     }
   },
-  mounted(){
-    const data = [
-      { x: '高一一班', low: 23, high: 89 },
-      { x: '高一二班', low: 33, high: 56 },
-      { x: '高一三班', low: 26, high: 55 },
-      { x: '高一四班', low: 16, high: 63 },
-      { x: '高一五班', low: 0, high: 99 },
-      { x: '高一六班', low: 35, high: 68 },
-      { x: '高一七班', low: 21, high: 64 },
-      { x: '高一八班', low: 13, high: 67 }
-    ];
-    const dv = new this.$DataSet.DataView().source(data);
-    dv.transform({
-      type: 'map',
-      callback: obj => {
-        obj.range = [ obj.low,obj.high ];
-        return obj;
-      }
-    });
-    const chart = new this.$G2.Chart({
-      container: 'd1',
-      forceFit: true,
-      height: 500
-      // padding: [ 20, 120, 95 ]
-    });
-    chart.source(dv, {
-      range: {
-        // max: 35
-      }
-    });
-    chart.tooltip({
-      showTitle: false,
-      crosshairs: {
-        type: 'rect'
+  computed:{
+    ...mapState({
+      examInfo:state=>state.app.analyzeExam
+    })
+  },
+  methods:{
+      setChart(data){
+        const dv = new this.$DataSet.DataView().source(data);
+        dv.transform({
+          type: 'map',
+          callback: obj => {
+            obj.range = [ obj.low,obj.high ];
+            return obj;
+          }
+        });
+        const chart = new this.$G2.Chart({
+          container: 'd1',
+          forceFit: true,
+          height: 500
+          // padding: [ 20, 120, 95 ]
+        });
+        chart.source(dv, {
+          range: {
+            // max: 35
+          }
+        });
+        chart.tooltip({
+          showTitle: false,
+          crosshairs: {
+            type: 'rect'
+          },
+          itemTpl: '<li data-index={index} style="margin-bottom:4px;">'
+            + '<span style="background-color:{color};" class="g2-tooltip-marker"></span>'
+            + '{name}<br/>'
+            + '<span style="padding-left: 16px">最大值：{high}</span><br/>'
+            + '<span style="padding-left: 16px">最小值：{low}</span><br/>'
+            + '</li>'
+        });
+        chart.schema().position('x*range')
+          .shape('box')
+          .tooltip('x*low*q1*median*q3*high', (x, low, q1, median, q3, high) => {
+            return {
+              name: x,
+              low,
+              q1,
+              median,
+              q3,
+              high
+            };
+          })
+          .style({
+            stroke: '#545454',
+            fill: '#1890FF',
+            fillOpacity: 0.3
+          });
+        chart.render();
       },
-      itemTpl: '<li data-index={index} style="margin-bottom:4px;">'
-        + '<span style="background-color:{color};" class="g2-tooltip-marker"></span>'
-        + '{name}<br/>'
-        + '<span style="padding-left: 16px">最大值：{high}</span><br/>'
-        + '<span style="padding-left: 16px">最小值：{low}</span><br/>'
-        + '</li>'
-    });
-    chart.schema().position('x*range')
-      .shape('box')
-      .tooltip('x*low*q1*median*q3*high', (x, low, q1, median, q3, high) => {
-        return {
-          name: x,
-          low,
-          q1,
-          median,
-          q3,
-          high
-        };
-      })
-      .style({
-        stroke: '#545454',
-        fill: '#1890FF',
-        fillOpacity: 0.3
-      });
-    chart.render();
+      async setSelectGradeListClassAvgScoreOrHighLowScore(){//最高/低 分
+          selectGradeListClassAvgScoreOrHighLowScore({
+            examId:this.examInfo.id
+          }).then( res => {
+            // console.log(res);
+            if (res.code == "0000") {
+              if (res.data != null) {
+                  if (res.data.length > 0) {
+                    for(let i in res.data){
+                      let obj = {};
+                      obj.x = res.data[i].className;
+                      obj.low = res.data[i].minScore;
+                      obj.high = res.data[i].maxScore;
+                      this.chartList.push(obj);
+                    }
+                    this.data = res.data
+                  }
+              }
+            }
+          })
+      }
+  },
+  mounted(){
+    this.setSelectGradeListClassAvgScoreOrHighLowScore();
+    
+  },
+  updated(){
+    this.setChart(this.chartList);
   }
 }
 </script>

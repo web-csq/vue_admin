@@ -9,7 +9,7 @@
         </div>
         <div class="body-c">
           <div class="body-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.value)">
-            <img :src="imgHolder" alt="">
+            <img :src="item.icon" >
             <h4>
               {{item.name}}
             </h4>
@@ -73,10 +73,10 @@ $main_blue:#409EFF;
     .body-c{
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
+      justify-content: space-around;
     }
     .body-box{
-      margin: 20px 0 0 0;
+      margin: 20px 0px 0 0;
       padding: 20px 20px 20px 35px;
       border-radius:12px;
       transition: box-shadow,transform .05s;

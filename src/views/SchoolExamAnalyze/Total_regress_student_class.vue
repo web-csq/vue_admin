@@ -8,120 +8,165 @@
     <div class="chart-c">
       <div id="d2"></div>
     </div>
-    <div>持续跟踪分布</div>
-    <div class="chart-c">
-      <div id="d3"></div>
-    </div>
   </div>
 </template>
 
 <script>
-const data = [
-  { name: '本次考试', 月份: '慧大海', 月均降雨量: 18 },
-  { name: '本次考试', 月份: '慧二海', 月均降雨量: 23 },
-  { name: '本次考试', 月份: '慧三海', 月均降雨量: 19 },
-  { name: '本次考试', 月份: '慧四海', 月均降雨量: 23 },
-  { name: '本次考试', 月份: '慧五海', 月均降雨量: 34 },
-  { name: '本次考试', 月份: '慧六海', 月均降雨量: 16 },
-  { name: '本次考试', 月份: '慧七海', 月均降雨量: 24 },
-  { name: '本次考试', 月份: '慧八海', 月均降雨量: 5},
-  { name: '进班名次', 月份: '慧大海', 月均降雨量:65},
-  { name: '进班名次', 月份: '慧二海', 月均降雨量: 33},
-  { name: '进班名次', 月份: '慧三海', 月均降雨量: 65 },
-  { name: '进班名次', 月份: '慧四海', 月均降雨量: 34 },
-  { name: '进班名次', 月份: '慧五海', 月均降雨量: 52 },
-  { name: '进班名次', 月份: '慧六海', 月均降雨量: 35 },
-  { name: '进班名次', 月份: '慧七海', 月均降雨量: 37 },
-  { name: '进班名次', 月份: '慧八海', 月均降雨量: 42 }
-];
-const data1 = [
-  { name: '本次考试', 月份: '慧大海', 月均降雨量: 18.9 },
-  { name: '本次考试', 月份: '慧二海', 月均降雨量: 28.8 },
-  { name: '本次考试', 月份: '慧三海', 月均降雨量: 39.3 },
-  { name: '本次考试', 月份: '慧四海', 月均降雨量: 81.4 },
-  { name: '本次考试', 月份: '慧五海', 月均降雨量: 47 },
-  { name: '本次考试', 月份: '慧六海', 月均降雨量: 20.3 },
-  { name: '本次考试', 月份: '慧七海', 月均降雨量: 24 },
-  { name: '本次考试', 月份: '慧八海', 月均降雨量: 35.6 },
-  { name: '上次考试', 月份: '慧大海', 月均降雨量: 12.4 },
-  { name: '上次考试', 月份: '慧二海', 月均降雨量: 23.2 },
-  { name: '上次考试', 月份: '慧三海', 月均降雨量: 34.5 },
-  { name: '上次考试', 月份: '慧四海', 月均降雨量: 99.7 },
-  { name: '上次考试', 月份: '慧五海', 月均降雨量: 52.6 },
-  { name: '上次考试', 月份: '慧六海', 月均降雨量: 35.5 },
-  { name: '上次考试', 月份: '慧七海', 月均降雨量: 37.4 },
-  { name: '上次考试', 月份: '慧八海', 月均降雨量: 42.4 }
-];
-const data2 = [
-  { year: '1991', value: 3 },
-  { year: '1992', value: 4 },
-  { year: '1993', value: 3.5 },
-  { year: '1994', value: 5 },
-  { year: '1995', value: 4.9 },
-  { year: '1996', value: 6 },
-  { year: '1997', value: 7 },
-  { year: '1998', value: 9 },
-  { year: '1999', value: 13 }
-];
+const data=[
+    {
+    "Class": "高一一班",
+    "Grade": "男",
+    "Score": 10
+    },
+    {
+    "Class": "高一二班",
+    "Grade": "男",
+    "Score": 23
+    },
+    {
+    "Class": "高一一班",
+    "Grade": "男",
+    "Score": 2
+    },
+    {
+    "Class": "高一二班",
+    "Grade": "男",
+    "Score": 5
+    },
+    {
+    "Class": "高一三班",
+    "Grade": "女",
+    "Score": 8
+    },
+    {
+    "Class": "高一二班",
+    "Grade": "女",
+    "Score": 6
+    },
+    {
+    "Class": "高一一班",
+    "Grade": "女",
+    "Score": 7
+    },
+    {
+    "Class": "高一一班",
+    "Grade": "男",
+    "Score": 10
+    }
+]
+import { selectGradeListClassProgressOrRetrogress } from "@/api/schoolAnalyze"
+import { mapState } from "vuex"
 export default {
   name: "s_total_reg_stu_class",
   data() {
-    return {};
+    return {
+      absoluteList:[],//绝对
+      relativeList:[],
+    }
+  },
+  methods:{
+    setChart(dom,data){
+      const chart = new this.$G2.Chart({
+        container: dom,
+        forceFit: true,
+        height: 400
+      });
+      chart.clear();
+      chart.source(data,{
+        Score:{
+          min:0,
+        }
+      });
+      chart.tooltip({
+        crosshairs: {
+          type: 'cross'
+        }
+      });
+      chart.axis('Score', {
+        grid: null
+      });
+      // x轴的栅格线居中
+      chart.axis('Class', {
+        tickLine: null,
+        subTickCount: 1, // 次刻度线个数
+        subTickLine: {
+          lineWidth: 1,
+          stroke: '#BFBFBF',
+          length: 4
+        },
+        grid: {
+          align: 'center', // 网格顶点从两个刻度中间开始
+          lineStyle: {
+            stroke: '#8C8C8C',
+            lineWidth: 1,
+            lineDash: [ 3, 3 ]
+          }
+        }
+      });
+      chart.point().position('Class*Score')
+        .color('Grade')
+        .adjust('jitter')
+        .shape('circle')
+        .opacity(0.65)
+        .size(4);
+        chart.legend(false);
+      chart.render();
+    },
+    async setSelectGradeListClassProgressOrRetrogress(){
+      this.absoluteList = [];
+      this.relativeList = [];
+      selectGradeListClassProgressOrRetrogress({
+        examId:this.examInfo.id,//97
+      }).then( res => {
+        if(res.code == "0000"){//相对
+          console.log(res);
+          if(res.data.absolute != null){//绝对
+            let absoluteData = res.data.absolute;
+            for( let i in absoluteData){
+              let classnames = absoluteData[i].className;
+              for(let j in absoluteData[i].list){
+                if(absoluteData[i].list[j].gradeRank > 0){
+                  let obj = {};
+                  obj.Class = classnames;
+                  obj.Grade = absoluteData[i].list[j].userName
+                  obj.Score = absoluteData[i].list[j].gradeRank
+                  this.absoluteList.push(obj);
+                }
+              }
+            }
+            this.setChart('d1',this.absoluteList);
+          }
+          if(res.data.relative != null){
+            let relativeData = res.data.relative;
+            for( let i in relativeData){
+              let classnames = relativeData[i].className;
+              for(let j in relativeData[i].list){
+                  if(relativeData[i].list[j].gradeRank > 0){
+                    let obj = {};
+                    obj.Class = classnames;
+                    obj.Grade = relativeData[i].list[j].userName
+                    obj.Score = relativeData[i].list[j].gradeRank
+                    this.relativeList.push(obj);
+                  }
+              }
+            }
+            this.setChart('d2',this.relativeList);
+          }
+          if(res.data.relative == null || res.data.absolute == null){
+            this.$Message.warning('暂无分析数据');
+          }
+        }
+      })
+    }
+  },
+  computed:{
+    ...mapState({
+      examInfo:state=>state.app.analyzeExam
+    })
   },
   mounted() {
-    const chart = new this.$G2.Chart({
-      container: 'd1',
-      forceFit: true,
-      height: 500
-    });
-    chart.source(data);
-    chart.interval().position('月份*月均降雨量').color('name')
-      .adjust([{
-        type: 'dodge',
-        marginRatio: 1 / 32
-      }]);
-    chart.render();
-
-    const chart1 = new this.$G2.Chart({
-      container: 'd2',
-      forceFit: true,
-      height: 500
-    });
-    chart1.source(data1);
-    chart1.interval().position('月份*月均降雨量').color('name')
-      .adjust([{
-        type: 'dodge',
-        marginRatio: 1 / 32
-      }]);
-    chart1.render();
-
-
-    const chart3 = new this.$G2.Chart({
-      container: 'd3',
-      forceFit: true,
-      height: 500
-    });
-    chart3.source(data2);
-    chart3.scale('value', {
-      min: 0
-    });
-    chart3.scale('year', {
-      range: [ 0, 1 ]
-    });
-    chart3.tooltip({
-      crosshairs: {
-        type: 'line'
-      }
-    });
-    chart3.line().position('year*value');
-    chart3.point().position('year*value')
-      .size(4)
-      .shape('circle')
-      .style({
-        stroke: '#fff',
-        lineWidth: 1
-      });
-    chart3.render();
+    this.setSelectGradeListClassProgressOrRetrogress();
+    // this.setChart();
   }
 };
 </script>

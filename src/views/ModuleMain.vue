@@ -16,7 +16,7 @@
               trigger="hover">
               <div class="nav-c">
                 <div class="nav-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.value)">
-                  <img :src="imgHolder" alt="">
+                  <img :src="item.icon" alt="">
                   <h4>{{item.name}}</h4>
                 </div>
               </div>
@@ -33,7 +33,7 @@
     </div>
     <div class="section">
       <div class="sction-b">
-        <router-view></router-view>
+        <router-view />
       </div>
     </div>
     
@@ -129,10 +129,11 @@ $main_blue:#409EFF;
   padding: 15px;
   background-color: #F0F2F5;
   .sction-b{
-    padding: 15px;
+    padding: 15px 0;
     max-width:1680px;
     margin:0 auto; 
     background-color: #fff;
+    box-sizing: border-box;
   }
 }
 .nav-c{
@@ -151,14 +152,17 @@ $main_blue:#409EFF;
   cursor: pointer;
   img{
     width: 60px;
+    height: 30px;
     margin: 0 10px 0 0;
   }
   h4{
     font-size: 18px;
+    font-weight: 400;
   }
 }
 .nav-box:hover{
    background-color: #f0f0f0;
+   color: #409EFF;
 }
 /**
   重写fade

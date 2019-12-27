@@ -1,6 +1,5 @@
 <template>
     <div>
-        管理员--添加学校以及学校管理员
         <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="100">
             <FormItem label="学校名称" prop="name">
                 <Input v-model="formValidate.name" placeholder="请输入学校名称" />
@@ -22,24 +21,24 @@
                 <Row>
                     <Col span="4" class="colWidth">
                         <FormItem >
-                            <Select v-model="formValidate.province" placeholder="选择省" @on-change="getProvince">
-                                <Option :value="item.id" v-for="item in formValidate.provinceList" :key="item.id">{{item.name}}</Option>
+                            <Select :label-in-value="true" v-model="formValidate.province" placeholder="选择省" @on-change="selProvince">
+                                <Option :value="item.id" v-for="item in formValidate.provinceList" :key="item.id">{{item.areaName}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
                     <Col span="1" class="cWidth">省</Col>
                     <Col span="4" class="colWidth">
                         <FormItem>
-                            <Select v-model="formValidate.city" placeholder="选择市" @on-change='getCity'>
-                                <Option :value="item.id" v-for="item in formValidate.cityList" :key="item.id">{{item.name}}</Option>
+                            <Select :label-in-value="true" v-model="formValidate.city" placeholder="选择市" @on-change='selCity'>
+                                <Option :value="item.id" v-for="item in formValidate.cityList" :key="item.id">{{item.areaName}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
                     <Col span="1" class="cWidth">市</Col>
                     <Col span="4" class="colWidth">
                         <FormItem >
-                            <Select v-model="formValidate.county" placeholder="选择市" @on-change='getCounty'>
-                                <Option :value="item.id" v-for="item in formValidate.countyList" :key="item.id">{{item.name}}</Option>
+                            <Select :label-in-value="true" v-model="formValidate.county" placeholder="选择市" @on-change='selCountry'>
+                                <Option :value="item.id" v-for="item in formValidate.countyList" :key="item.id">{{item.areaName}}</Option>
                             </Select>
                         </FormItem>
                         
@@ -52,12 +51,12 @@
             </FormItem>
             <FormItem label="订单类型" prop="gender">
                 <RadioGroup v-model="formValidate.gender">
-                    <Radio label="male">学校自购</Radio>
-                    <Radio label="female">公司投入</Radio>
+                    <Radio label="false">学校自购</Radio>
+                    <Radio label="true">公司投入</Radio>
                 </RadioGroup>
             </FormItem>
             <FormItem label="备注" prop="desc">
-                <Input v-model="formValidate.desc" type="textarea" :autosize="{minRows: 2,maxRows: 5}" placeholder="Enter something..." />
+                <Input v-model="formValidate.desc" type="textarea" :autosize="{minRows: 2,maxRows: 5}" placeholder="请输入备注信息..." />
             </FormItem>
             <FormItem>
                 <Button type="primary" @click="handleSubmit">提交</Button>
@@ -67,6 +66,7 @@
     </div>
 </template>
 <script>
+import { getProvinceOrCityOrCountry, insertSchool } from '@/api/base'
 export default {
     name:'addSchool',
     data(){
@@ -75,27 +75,18 @@ export default {
                 name: '', //学校名
                 phones: '', // 联系方式
                 userName:'',//联系人
-                sections: '',//学段
-                gender: '',
+                sections: '0',//学段
+                gender: 'false',
                 province:'',
+                provinceName:'',
                 city: '', // 市
+                cityName: '', // 市
                 county: '', // 区（县）
+                countyName: '', // 区（县）
                 detalAdress:'',//详细地址
-                provinceList: [
-                    {id:1,name:'河南'},
-                    {id:2,name:'北京'},
-                    {id:3,name:'上海'},
-                    {id:4,name:'湖北'}
-                ],//省份
-                cityList:[
-                    {id:100,name:'郑州'},
-                    {id:102,name:'焦作'},
-                    {id:103,name:'洛阳'}
-                ],
-                countyList:[
-                    {id:10001,name:'高新区'},
-                    {id:10002,name:'经开区'}
-                ],
+                provinceList: [],//省份
+                cityList:[],//市
+                countyList:[],//区/县
                 desc: '',//备注
                 address:''//学校地址
             },
@@ -103,9 +94,11 @@ export default {
                 name: [
                     { required: true, message: '学校名称不能为空', trigger: 'blur' }
                 ],
+                userName:[
+                    {required: true, message: '联系人不能为空', trigger: 'blur'}
+                ],
                 phones: [
-                    { required: true, message: '联系电话不能为空', trigger: 'blur' },
-                    { type: 'number', message: 'Incorrect ephones format', trigger: 'blur' }
+                    { required: true, message: '联系电话不能为空', trigger: 'blur' }
                 ],
                 sections: [
                     { required: true, message: '学段不能为空', trigger: 'change' }
@@ -121,27 +114,95 @@ export default {
     },
     methods:{
         handleSubmit () {//提交
-            console.log('提交');
-            // this.$router.push('SchoolList');//如果添加成功，则进入到学校列表
+            if(this.formValidate.phones.length < 11){
+                this.$message.error('电话号码格式不正确');
+                return false;
+            }
+            if(this.formValidate.name == "" || this.formValidate.userName == "" || this.formValidate.provinceName == "" || this.formValidate.countyName == "" || this.formValidate.cityName == "" || this.formValidate.sections == '0'){
+                this.$message.error('基本信息不能为空');
+                return false;
+            }
+            this.addSchoolReq();//添加学校
         },
         handleReset (name) {//重置
             this.$refs[name].resetFields();
         },
-        getProvince(value){//省份
-            console.log('省：',value);
+        async getProvince(){//省份parentId
+            getProvinceOrCityOrCountry({
+                parentId:0
+            }).then( res => {
+                let provinceData = JSON.parse(res.data).showapi_res_body;
+                this.formValidate.provinceList = provinceData.data
+            })
         },
-        getCity(value){//市
-            console.log('市：',value);
+        async getCity(value){//市
+            getProvinceOrCityOrCountry({
+                parentId:value
+            }).then( res => {
+                let cityData = JSON.parse(res.data).showapi_res_body;
+                this.formValidate.cityList = cityData.data
+            })
         },
-        getCounty(value){//县/区
-            console.log('区：',value);
+        async getCounty(value){//县/区
+            getProvinceOrCityOrCountry({
+                parentId:value
+            }).then( res => {
+                let countyData = JSON.parse(res.data).showapi_res_body;
+                this.formValidate.countyList = countyData.data
+            })
         },
-        addSchoolReq(){//添加学校接口
-            
-        }
+        selProvince(data){//根据省得到市
+            this.formValidate.provinceName = data.label;
+            this.formValidate.province = data.value;
+            this.getCity(data.value);
+        },
+        selCity(data){//根据市 得到县/区
+            this.formValidate.city = data.value;
+            this.formValidate.cityName = data.label;
+            this.getCounty(data.value);
+        },
+        selCountry(data){
+            this.formValidate.county = data.value;
+            this.formValidate.countyName = data.label;
+        },
+        async addSchoolReq(){//添加学校接口
+            let datas = this.formValidate;
+            insertSchool({
+                address : datas.detalAdress,
+                cityId : datas.city,
+                cityName : datas.cityName,
+                contactPerson : datas.userName,
+                countyId : datas.county,
+                countyName : datas.countyName,
+                enabled : true,
+                name : datas.name,
+                orderType : datas.gender,
+                phone : datas.phones,
+                provinceId : datas.province,
+                provinceName : datas.provinceName,
+                remark : datas.desc,
+                section : datas.sections
+            }).then( res => {
+                // console.log('添加学校',res);
+                
+                if(res.code == "0000"){
+                    this.$Message.info({
+                        content: res.message,
+                        duration: 1
+                    });
+                    setTimeout( () => {
+                        this.$router.push('schoolList');//如果添加成功，则进入到学校列表
+                    },1000)
+                }
+                
+            })
+        },
     },
     mounted(){
-
+        this.getProvince();
+    },
+    created(){
+        
     }
 }
 </script>

@@ -38,7 +38,7 @@ $main_blue:#409EFF;
   height:60px;
   img{
     width: 80px;
-    height: 35px;
+    height: 30px;
     margin: 0 10px 0 0 ;
   }
   .top-l{

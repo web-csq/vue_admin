@@ -1,70 +1,45 @@
 <template>
   <div>
-    <div>
+    <div style="display:flex;align-items:center;">
       选择班级：
-      <Select v-model="model" style="width:200px">
-          <Option v-for="item in classList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+      <Select v-model="model" style="width:200px" @on-change="getData">
+          <Option v-for="item in classList" :value="item.id" :key="item.id">{{ item.name }}</Option>
       </Select>
       &nbsp;&nbsp;&nbsp;
       选择学科：
-      <Select v-model="subject" style="width:200px">
-          <Option v-for="item in subjectList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+      <Select v-model="subject" style="width:200px;margin:0 15px 0 0;" @on-change="getData">
+          <Option v-for="item in examInfo.subjectList" :value="item.subjectId" :key="item.subjectId">{{ item.subjectName }}</Option>
       </Select>
+      分数间隔：
+       <div style="display:inline-block;width:80px;">
+         
+        <Input v-model="section"  size="small" placeholder="输入分数段" />
+      </div>
+      
+      <Button type="primary" style="margin:0 0 0 10px" :loading="btnLoading" @click="getData" size="small">设置分段</Button>
     </div>
     <div class="chart-c">
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-     <div class="tab-title">学科成绩分布报表</div>
-     <Table border :columns="columns" :data="data"></Table>
+     <div class="tab-title">学科成绩分段报表</div>
+     <Table border :columns="columns" :data="tableData"></Table>
     </div>
   </div>
 </template>
 
 <script>
-const data = [
-  { year: '0-10', value: 0 },
-  { year: '11-20', value: 0 },
-  { year: '21-30', value: 0 },
-  { year: '31-40', value: 0 },
-  { year: '41-50', value: 10 },
-  { year: '51-60', value: 3 },
-  { year: '61-70', value: 10 },
-  { year: '71-80', value: 20 },
-  { year: '81-90', value: 50 },
-  { year: '91-100', value: 40 }
-];
+import { listStudentScoreGroupByClass } from "@/api/classAnalyze"
+import { mapState } from 'vuex';
+let _this;
 export default {
   name:"c_class_subject_analyze",
   data(){
     return{
-      classList: [
-          {
-              value: 'class1',
-              label: '高一一班'
-          },
-          {
-              value: 'class2',
-              label: '高一二班'
-          },
-          {
-              value: 'class3',
-              label: '高一三班'
-          },
-          {
-              value: 'class4',
-              label: '高一四班'
-          },
-          {
-              value: 'class5',
-              label: '高一五班'
-          },
-          {
-              value: 'class6',
-              label: '高一六班'
-          }
-        ],
-        model: 'class1',
+      section:10,
+      type:1,
+      btnLoading:false,
+        model: '',
         subjectList:[
           {
             value: 'chinese',
@@ -84,111 +59,110 @@ export default {
           }
         ],
         subject:"chinese",
-        columns: [
-            {
-                title: '年级',
-                key: 'class'
-            },
-            {
-                title: '0-10',
-                key: 'zero'
-            },
-            {
-                title: '11-20',
-                key: 'one'
-            },
-            {
-                title: '21-30',
-                key: 'two'
-            },
-            {
-                title: '31-40',
-                key: 'three'
-            },
-            {
-                title: '41-50',
-                key: 'four'
-            },
-            {
-                title: '51-60',
-                key: 'five'
-            },
-            {
-                title: '61-70',
-                key: 'six'
-            },
-            {
-                title: '71-80',
-                key: 'seven'
-            },
-            {
-                title: '81-90',
-                key: 'eight'
-            },
-            {
-                title: '91-100',
-                key: 'nine'
-            },
-
-        ],
-       data: [
-            {
-                class:"高一一班",
-                zero:35,
-                one:351,
-                two:100,
-                three:12,
-                four:56,
-                five:79,
-                six:201,
-                seven:201,
-                eight:201,
-                nine:201,
-            },
-            {
-                class:"高一二班",
-                zero:135,
-                one:51,
-                two:110,
-                three:120,
-                four:76,
-                five:68,
-                six:51,
-                seven:31,
-                eight:111,
-                nine:21,
-            }
-        ]
+        columns: [],
+       tableData: []
     }
   },
-  mounted(){
-    const chart = new this.$G2.Chart({
-      container: 'd1',
-      forceFit: true,
-      height: 400
-    });
-    chart.source(data);
-    chart.scale('value', {
-      min: 0
-    });
-    chart.scale('year', {
-      range: [ 0, 1 ]
-    });
-    chart.tooltip({
-      crosshairs: {
-        type: 'line'
-      }
-    });
-    chart.line().position('year*value').shape('smooth');
-    chart.area().position('year*value').shape('smooth');
-    chart.point().position('year*value')
-      .size(2)
-      .shape('circle')
-      .style({
-        stroke: '#fff',
-        lineWidth: 1
+  methods:{
+    getData(){
+      this.btnLoading=true
+      listStudentScoreGroupByClass({
+        examId :this.examInfo.id,
+        section:this.section,
+        classId:_this.model,
+        subjectId:this.subject
+      }).then(res=>{
+        _this.btnLoading=false;
+        if(res.data.length===0) _this.$message.error("暂无数据")
+        
+        if(res.code==="0000"){
+          let list=[];
+          _this.columns=[]
+          _this.tableData=[];
+          let tabObj={}
+          for(let item of res.data){
+            let obj={},obj1={}
+            obj.year=item.name;
+            obj["数量"]=item.count
+            list.push(obj)
+            obj1.title=item.name;
+            obj1.key=item.name
+            _this.columns.push(obj1)
+            tabObj[item.name]=item.count
+          }
+          _this.tableData.push(tabObj)
+          _this.initChart(list)
+          _this.type++
+        }
+      })
+    },
+    initChart(data){
+      const chart = new this.$G2.Chart({
+        container: 'd1',
+        forceFit: true,
+        height: 400
       });
-    chart.render();
+      chart.source(data);
+      chart.scale('数量', {
+        min: 0
+      });
+      chart.scale('year', {
+        range: [ 0, 1 ]
+      });
+      chart.tooltip({
+        crosshairs: {
+          type: 'line'
+        }
+      });
+      
+
+      if(_this.type==1){
+        chart.line().position('year*数量').shape('smooth');
+        chart.area().position('year*数量').shape('smooth');
+        chart.point().position('year*数量')
+          .size(2)
+          .shape('circle')
+          .style({
+            stroke: '#fff',
+            lineWidth: 1
+          });
+        chart.render();
+        chart.source(data);
+      }else{
+       chart.line().position('year*数量').shape('smooth');
+        chart.area().position('year*数量').shape('smooth');
+        chart.point().position('year*数量')
+          .size(2)
+          .shape('circle')
+          .style({
+            stroke: '#fff',
+            lineWidth: 1
+          });
+        chart.changeData(data);
+         _this.$nextTick(()=>{
+           if(document.getElementById("d1").children.length>1){
+             document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
+           }
+        })
+      }
+      
+
+    }
+  },
+  computed:{
+    ...mapState({
+      examInfo:state=>state.app.analyzeExam,
+      classList:state=>state.app.classList
+    })
+  },
+  created(){
+    _this=this;
+    _this.model=_this.classList[0].id
+    _this.subject=_this.examInfo.subjectList[0].subjectId
+    _this.getData()
+  },
+  mounted(){
+    
   }
 }
 </script>

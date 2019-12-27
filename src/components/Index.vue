@@ -61,7 +61,7 @@
                           trigger="hover">
                           <div class="nav-c">
                             <div class="nav-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.value)">
-                              <img :src="imgHolder" alt="">
+                              <img :src="item.icon" alt="">
                               <h4>{{item.name}}</h4>
                             </div>
                           </div>
@@ -123,9 +123,9 @@
             <!-- 页面主体 -->
             <div class="main-content">
                 <div class="view-c">
-                   <h4 style="margin-bottom:20px;">
-                    2022届12.12 第一次模拟考试 
-                    <span style="font-size:14px;margin-left:20px;">时间：2019/12/13 </span> 
+                   <h4 style="margin-bottom:20px;font-size:15px">
+                    {{examInfo.name}}
+                    <span style="font-size:12px;margin-left:20px;">时间：{{examInfo.createTime}} </span> 
                    </h4>
                   <keep-alive :include="keepAliveData">
                   <!-- 子页面 -->
@@ -145,6 +145,10 @@ import userFlag from "@/components/User"
 import Screenfull from '@/components/Screenfull'
 import { mapState } from "vuex"
 import { blankURL,routeToTitle } from "@/utils/blankRoute"
+
+import { changePassword } from "@/api/user"
+
+
 export default {
     name: 'index',
     data () {
@@ -227,7 +231,8 @@ export default {
     computed: {
         ...mapState({
           menuItems:state=>state.router.menuItems,
-          permissionList:state=>state.app.permissionList
+          permissionList:state=>state.app.permissionList,
+          examInfo:state=>state.app.analyzeExam,
         }),
         // 需要缓存的路由
         keepAliveData() {
@@ -322,8 +327,9 @@ export default {
                     this.gotoPage('password')
                     break
                 case '2':
-                    // 基本资料
-                    this.gotoPage('userinfo')
+                    // 修改密码
+                    // this.gotoPage('userinfo')
+                    // this.showModel();
                     break
                 case '3':
                     resetTokenAndClearUser()
@@ -488,24 +494,24 @@ export default {
             }
         },
         jump(type){
-      switch(type){
-        case 0:
-          this.$router.push("/moduleshow")
-          break;
-        case 1:
+            switch(type){
+                case 0:
+                this.$router.push("/moduleshow")
+                break;
+                case 1:
 
-          break;
-        case 2:
-          blankURL(this,"/testmanager")
-          break;
-        case 3:
-          blankURL(this,"/analyzelist")
-          break;
-        case 4:
-          
-          break;
-      }
-    }
+                break;
+                case 2:
+                blankURL(this,"/testmanager")
+                break;
+                case 3:
+                blankURL(this,"/analyzelist")
+                break;
+                case 4:
+                
+                break;
+            }
+        },
     },
     components:{
       Screenfull,
@@ -515,8 +521,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "@/styles/transition.scss";
 .index-vue {
-    height: 100%;
+    height: 100vh;
     display: flex;
     justify-content: space-between;
     color: #666;
@@ -689,7 +696,8 @@ a {
 }
 /* 主要内容区域 */
 .main-content {
-    overflow: auto;
+   overflow-x: hidden;
+   overflow-y: scroll;
     height: 100%;
     width: 100%;
     background: #fff;
@@ -749,6 +757,7 @@ a {
   cursor: pointer;
   img{
     width: 60px;
+    height:30px;
     margin: 0 10px 0 0;
   }
   h4{

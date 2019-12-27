@@ -5,10 +5,12 @@
   "author": "陈胜强 吕西沙",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "dev": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "eslint --fix --ext .js,.vue src test/unit"
+    "serve": "vue-cli-service serve ",
+    "dev": "vue-cli-service serve ",
+    "test": "vue-cli-service build --mode test",
+    "build": "vue-cli-service build ",
+    "lint": "eslint --fix --ext .js,.vue src test/unit",
+    "analyze": "cross-env NODE_ENV=production npm_config_report=true npm run build"
   },
   "dependencies": {
     "@antv/data-set": "^0.10.2",
@@ -16,11 +18,9 @@
     "@babel/core": "^7.7.5",
     "@babel/preset-env": "^7.7.6",
     "axios": "^0.19.0",
-    "bootstrap": "^3.4.1",
-    "element-ui": "^2.13.0",
+    "element-ui": "^2.12.0",
     "file-saver": "^2.0.2",
     "iview": "^3.3.3",
-    "jquery": "^3.4.1",
     "js-cookie": "^2.2.1",
     "particles.js": "^2.0.0",
     "popper.js": "^1.16.0",
@@ -34,14 +34,21 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.5.0",
     "@vue/cli-service": "^3.12.1",
+    "babel-plugin-component": "^1.1.1",
+    "babel-plugin-import": "^1.13.0",
     "babel-plugin-transform-remove-console": "^6.9.4",
     "babel-plugin-transform-remove-strict-mode": "0.0.2",
+    "compression-webpack-plugin": "^3.0.1",
     "core-js": "^2.6.11",
+    "cross-env": "^6.0.3",
+    "install": "^0.13.0",
     "node-sass": "^4.13.0",
+    "npm": "^6.13.4",
     "sass-loader": "^8.0.0",
     "script-loader": "^0.7.2",
     "terser-webpack-plugin": "^2.3.0",
-    "vue-template-compiler": "^2.5.21"
+    "vue-template-compiler": "^2.5.21",
+    "webpack-bundle-analyzer": "^3.6.0"
   },
   "postcss": {
     "plugins": {

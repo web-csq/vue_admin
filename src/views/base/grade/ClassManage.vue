@@ -1,9 +1,6 @@
 <template>
     <div>
-        班级管理下的 --- 查看学生信息
-        <div>
-
-            <!-- 上传文件 -->
+        <!--<div>
             <Upload
                 style="display:inline-block;margin-right:10px;"
                 ref="upload"
@@ -17,42 +14,40 @@
                 action="/url">
                 <Button icon="ios-cloud-upload-outline" type="primary">批量导入学生</Button>
             </Upload>
-            <!-- <Button
+            <Button
                 class=" right-10"
                 icon="ios-cloud-download"
                 type="primary"
                 @click="downloadFile('档案模板')"
-            >下载模板</Button> -->
+            >下载模板</Button>
             <Button
                 class=" right-10"
                 icon="ios-cloud-download"
                 type="primary"
             >下载模板</Button>
             <Button style="margin-left:10px;" @click="addStu">新增学生</Button>
-        </div>
-
+        </div> -->
+        
         <Table
         :columns="columns1"
         :data="schoolArr"
+        :loading="loading"
         >
             <!--操作-->
             <template slot-scope="{ row, index }" slot="action">
-                <Button type="info" size="small"  @click="updata(index,row)">修改信息</Button>
-                <Button type="success" size="small" style="margin: 0 5px" @click="overSet(index)">重置密码</Button>
-                <Button type="error" size="small" @click="remove(index)">删除</Button>
+                <!-- <Button type="info" size="small"  @click="updata(index,row)">修改信息</Button> -->
+                <Button type="info" size="small" style="margin: 0 5px" @click="overSet(row,index)">重置密码</Button>
+                <!-- <Button type="error" size="small" @click="remove(index)">删除</Button> -->
             </template>
         </Table>
         <Page  class="setPage"
             :total="page.total" 
             :page-size="page.pageSize"
             :current="page.pageNum"
-            :page-size-opts="[10, 20, 30, 40]"
             :placement="'top'"
-            show-sizer
             show-total
             show-elevator
             @on-change="nextPageNum"
-            @on-page-size-change="nextPageSize"
 
         ></Page>
 
@@ -128,32 +123,40 @@
 </template>
 
 <script>
+import { enableOrDisableUsers, listUserByRoleIdAndPage, resetPassword } from '@/api/base'
+import { mapState } from 'vuex'
 export default {
     name:"classManage",
     data(){
         return {
             addStuModal:false,
             updataModal:false,//修改学生模态框
+            loading:true,
             page:{
                 pageNum:1,
                 pageSize:10,
-                total:100
+                total:0
             },//分页
-            uploadData:{//上传文件所须参数
-                merchantCode:'',
-            },
+            schoolId:0,
+            gradeId:0,
             columns1: [
                 {
                     title: '学号',
-                    key: 'id',
+                    key: 'number',
                     align: 'center',
                     width: 90
                 },
                 {
                     title: '姓名',
-                    key: 'name',
+                    key: 'truename',
                     align: 'center',
                     minWidth:200
+                },
+                {
+                    title: '账号',
+                    key: 'username',
+                    align: 'center',
+                    minWidth: 120
                 },
                 {
                     title: '班级',
@@ -162,13 +165,7 @@ export default {
                     minWidth: 120
                 },
                 {
-                    title: '账号',
-                    key: 'userName',
-                    align: 'center',
-                    minWidth: 120
-                },
-                {
-                    title: '是否可以',
+                    title: '账号状态',
                     key: 'status',
                     align: 'center',
                     minWidth:  70,
@@ -177,7 +174,7 @@ export default {
                             h('i-switch', { //数据库1是已处理，0是未处理
                                 props: {
                                     type: 'primary',
-                                    value: params.row.status === 1  //控制开关的打开或关闭状态，官网文档属性是value
+                                    value: params.row.enabled === true  //控制开关的打开或关闭状态，官网文档属性是value
                                 },
                                 scopedSlots:{
                                     open:() => h('span','开启'),
@@ -189,9 +186,9 @@ export default {
                                 },
                                 on: {
                                     'on-change': (value) => {//触发事件是on-change,用双引号括起来，
-                                        console.log(value);
-                                        console.log(params);
-                                        this.switch(params.index) //params.index是拿到table的行序列，可以取到对应的表格值
+                                        // console.log(value);
+                                        // console.log(params);
+                                        this.switch(params.row.id,value) //params.index是拿到table的行序列，可以取到对应的表格值
                                     }
                                 }
                             }, )
@@ -206,44 +203,7 @@ export default {
                 }
                 
             ],
-            schoolArr:[
-                {
-                    id:7,
-                    name: '李斯',
-                    className: '高一1班',
-                    userName: 'zhangsan1',
-                    gradeId: '1',
-                    classId:'1',
-                    status:1
-                },
-                {
-                    id:8,
-                    name: 'Jim Green',
-                    className: '高一1班',
-                    classId:'1',
-                    userName: 'zhangsan2',
-                    gradeId: '1',
-                    status:0
-                },
-                {
-                    id:9,
-                    name: 'Joe Black',
-                    className: '高一1班',
-                    userName: 'zhangsan3',
-                    gradeId: '3',
-                    status:1,
-                    classId:'2',
-                },
-                {   
-                    id:10,
-                    name: '张三仪',
-                    className: '高一1班',
-                    userName: 'zhangsan4',
-                    gradeId: '2',
-                    status:0,
-                    classId:'1',
-                }
-            ],
+            schoolArr:[],
             formItem:{
                 name:'',
                 sexRadio:'0',
@@ -287,25 +247,19 @@ export default {
         }
     },
     methods:{
-        nextPageNum(i){//页码改变的回调，返回改变后的页码
+        nextPageNum(i){
+            this.loading = true;
             this.page.pageNum = i;
-            console.log('当前页',this.page.pageNum);
+            this.getStuList();
         },
-        nextPageSize(size){//切换每页条数时的回调，返回切换后的每页条数
-            this.page.pageSize = size;
-            console.log('每条数据',this.page.pageSize);
-        },
-        switch(idx){//开关
-            console.log(11+idx);
+        switch(idx,value){//开关
+            this.setEnableOrDisableUsers(value,idx);
         },
         remove(index){//删除
             console.log(index);
-            let resMessage = '操作成功';
-            this.$Message.success(resMessage);//删除成功
-            // this.$Message.error('This is an error tip');//删除失败
         },
-        overSet(index){//重置密码
-            
+        overSet(row,idx){//重置密码
+            this.setResetPassword(row.id)
         },
         updata(index,row){//修改信息
             console.log(row);
@@ -400,6 +354,55 @@ export default {
                 }
             });
         },
+        async setEnableOrDisableUsers(value,id){//禁用
+            enableOrDisableUsers({
+                isEnable:value,
+                userIdList:id
+            }).then( res => {
+                if (res.code == "0000") {
+                    this.$Message.success(res.message);
+                }
+            })
+        },
+        async setResetPassword(id){//重置密码
+            resetPassword({
+                userId:id
+            }).then( res => {
+                if (res.code == "0000") {
+                    this.$Message.success(res.message);
+                }else{
+                    this.$Message.error(res.message)
+                }
+            })
+        },
+        async getStuList(){//学生列表
+            listUserByRoleIdAndPage({
+                roleId:4,
+                pageSize:this.page.pageSize,
+                pageNum:this.page.pageNum,
+                schoolId:this.schoolId
+            }).then( res => {
+                this.loading = false;
+                if (res.code == "0000") {
+                    if (res.count > 0) {
+                        this.schoolArr = res.data;
+                    }
+                    this.page.total = res.count;
+                }
+            })
+        }
+    },
+    computed:{
+        ...mapState({
+            school:state=>state.user.school,
+            userInfo:state=>state.user.user,
+        })
+    },
+    mounted(){
+        // console.log(this.school);
+        this.schoolId = this.school.id;
+        this.gradeId = this.userInfo.gradeId;
+        this.getStuList();
     }
 }
 </script>

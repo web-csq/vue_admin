@@ -41,6 +41,7 @@ $font-s: 12px;
 .footer {
   position: fixed;
   bottom: 2rem;
+  z-index: 5;
   left: 0;
   width: 100%;
   font-size: $font-s;

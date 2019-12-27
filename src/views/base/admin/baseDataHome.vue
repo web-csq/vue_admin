@@ -33,33 +33,41 @@
     </div>
     <div class="section-con">
       <div class="section-left">
-      <!-- :active-name="$route.name"  Clo-->
-          <Menu :theme="theme2" :open-names="['1']" accordion @on-select="testToPage" >
+          <Menu :theme="theme2"  accordion   :active-name='permissionList[0].child[0].value'>
+            <template v-for="item in permissionList[0].child" >
+              <MenuItem  :name="item.value" :key="'item.id' + item.value" :to="item.value">
+                <span class="layout-text" :key="'item.id' + item.value">{{ item.name }}</span>
+              </MenuItem>
+            </template>
+            <!-- <MenuItem  :name="value" :to="value">
+                <span class="layout-text" >注册</span>
+              </MenuItem> -->
+          </Menu>
+          
+          <!-- <Menu :theme="theme2" :open-names="['1']" accordion @on-select="testToPage" >
               <Submenu name="1">
                   <template slot="title">
                       <Icon type="ios-paper" />
                       账号管理
                   </template>
                   <MenuItem name="1-1" >学校列表</MenuItem>
-                  <MenuItem name="1-2">新增学校</MenuItem>
+                  <MenuItem name="1-4">省级管理员</MenuItem>
+                  <MenuItem name="1-5">市级管理员</MenuItem>
+                  <MenuItem name="1-6">区/县级管理员</MenuItem>
+                  
               </Submenu>
               <Submenu name="2">
                   <template slot="title">
-                      <Icon type="ios-people" />
-                      校级管理员
+                      <Icon type="ios-paper" />
+                      学校账号管理
                   </template>
-                  <MenuItem name="2-1">新增用户</MenuItem>
-                  <MenuItem name="2-2">年级列表</MenuItem>
-                  <MenuItem name="2-3">教师信息</MenuItem>
+                  <MenuItem name="2-1" >年级管理</MenuItem>
+                  <MenuItem name="2-2">学生列表</MenuItem>
+                  <MenuItem name="2-3">教师列表</MenuItem>
               </Submenu>
-              <Submenu name="3">
-                  <template slot="title">
-                      <Icon type="ios-people" />
-                      班级管理
-                  </template>
-                  <MenuItem name="3-1">学生信息</MenuItem>
-              </Submenu>
-          </Menu>
+              <MenuItem name="3-1" >班级设置</MenuItem>
+          </Menu> -->
+
       </div>  
       <!-- 右侧内容 -->
       <div class="main-content">
@@ -84,58 +92,30 @@ export default {
     return{
       imgHolder:"https://via.placeholder.com/75x30?text=75 x 30",
       title:"",
-      theme2: 'light'
+      theme2: 'light',
+      menuList:[],
+      value:'/register'
     }
   },
   methods:{
-    toPage(res){
-      this.$router.push('/addSchool');
-      console.log(res);
-    },
-    testToPage(name){
-      // 如果 name = 1-1，1-2，1-3
-      switch(name){
-        case '1-1':
-          this.$router.push('/schoolList');
-          break;
-        case '1-2':
-          this.$router.push('/addSchool');
-          break;
-        case '2-1':
-          this.$router.push('/setInfo');
-          break;
-        case '2-2':
-          this.$router.push('/gradeInfo');
-          break;
-        case '2-3':
-          this.$router.push('/teaManage');
-          break;
-        case '3-1':
-          this.$router.push('/classManage');
-          break;
-      }
-    }
     
   },
   computed:{
     ...mapState({
-      permissionList:state=>state.app.permissionList
+      permissionList:state=>state.app.permissionList,
+      userInfo:state=>state.user.user
     })
 
   },
   watch:{
-    // $route: {
-    //     handler: function(route) {
-    //       this.title=routeToTitle(this.$route.fullPath)
-    //     },
-    //     immediate: true
-    // }
+
   },
   created(){
-    
+    // console.log(this.userInfo)
+    this.imgHolder = this.userInfo.pic;
+    this.$router.push(this.permissionList[0].child[0].value);
   },
   mounted(){
-    this.$router.push('/schoolList');
   },
   components:{
     userFlag,
@@ -246,15 +226,17 @@ $main_blue:#409EFF;
   }
   h4{
     font-size: 18px;
+    font-weight: 400;
   }
 }
+
 .nav-box:hover{
-   background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
 /**
   重写fade
  */
- .fade-enter-active, .fade-leave-active {
+.fade-enter-active, .fade-leave-active {
   transition: all .5s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {

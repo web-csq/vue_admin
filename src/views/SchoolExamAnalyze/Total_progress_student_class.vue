@@ -47,97 +47,127 @@ const data=[
     "Class": "高一一班",
     "Grade": "女",
     "Score": 7
+    },
+    {
+    "Class": "高一一班",
+    "Grade": "男",
+    "Score": 10
     }
 ]
+import { selectGradeListClassProgressOrRetrogress } from "@/api/schoolAnalyze"
+import { mapState } from "vuex"
 export default {
   name: "s_total_pro_stu_class",
   data() {
-    return {};
+    return {
+      absoluteList:[],//绝对
+      relativeList:[],
+    }
+  },
+  methods:{
+    setChart(dom,data){
+      const chart = new this.$G2.Chart({
+        container: dom,
+        forceFit: true,
+        height: 400
+      });
+      chart.clear();
+      chart.source(data,{
+        Score:{
+          min: 0,
+        }
+      });
+      chart.tooltip({
+        crosshairs: {
+          type: 'cross'
+        }
+      });
+      chart.axis('Score', {
+        grid: null
+      });
+      // x轴的栅格线居中
+      chart.axis('Class', {
+        tickLine: null,
+        subTickCount: 1, // 次刻度线个数
+        subTickLine: {
+          lineWidth: 1,
+          stroke: '#BFBFBF',
+          length: 4
+        },
+        grid: {
+          align: 'center', // 网格顶点从两个刻度中间开始
+          lineStyle: {
+            stroke: '#8C8C8C',
+            lineWidth: 1,
+            lineDash: [ 3, 3 ]
+          }
+        }
+      });
+      chart.point().position('Class*Score')
+        .color('Grade')
+        .adjust('jitter')
+        .shape('circle')
+        .opacity(0.65)
+        .size(4);
+        chart.legend(false);
+      chart.render();
+    },
+    async setSelectGradeListClassProgressOrRetrogress(){
+      this.absoluteList = [];
+      this.relativeList = [];
+      selectGradeListClassProgressOrRetrogress({
+        examId:this.examInfo.id,//97
+      }).then( res => {
+        if(res.code == "0000"){//相对
+          console.log(res);
+          if(res.data.absolute != null){//绝对
+            let absoluteData = res.data.absolute;
+            for( let i in absoluteData){
+              let classnames = absoluteData[i].className;
+              for(let j in absoluteData[i].list){
+                let obj = {};
+                obj.Class = classnames;     
+                if(absoluteData[i].list[j].gradeRank < 0){
+                  obj.Grade = absoluteData[i].list[j].userName       
+                  obj.Score = -absoluteData[i].list[j].gradeRank
+                }
+                this.absoluteList.push(obj);
+              }
+            }
+            
+            this.setChart('d1',this.absoluteList);
+          }
+          if(res.data.relative != null){
+            let relativeData = res.data.relative;
+            for( let i in relativeData){
+              let classnames = relativeData[i].className;
+              for(let j in relativeData[i].list){
+                  let obj = {};
+                  obj.Class = classnames;
+                  if(relativeData[i].list[j].gradeRank < 0){
+                    obj.Grade = relativeData[i].list[j].userName
+                    obj.Score = -relativeData[i].list[j].gradeRank
+                  }
+                  this.relativeList.push(obj);
+              }
+            }
+            this.setChart('d2',this.relativeList);
+          }
+          if(res.data.relative == null || res.data.absolute == null){
+            this.$Message.warning('暂无分析数据');
+          }
+        }
+      })
+    }
+  },
+  computed:{
+    ...mapState({
+      examInfo:state=>state.app.analyzeExam
+    })
   },
   mounted() {
-     const chart = new this.$G2.Chart({
-      container: 'd1',
-      forceFit: true,
-      height: 400
-    });
-    chart.source(data);
-    chart.tooltip({
-      crosshairs: {
-        type: 'cross'
-      }
-    });
-    chart.axis('Score', {
-      grid: null
-    });
-    // x轴的栅格线居中
-    chart.axis('Class', {
-      tickLine: null,
-      subTickCount: 1, // 次刻度线个数
-      subTickLine: {
-        lineWidth: 1,
-        stroke: '#BFBFBF',
-        length: 4
-      },
-      grid: {
-        align: 'center', // 网格顶点从两个刻度中间开始
-        lineStyle: {
-          stroke: '#8C8C8C',
-          lineWidth: 1,
-          lineDash: [ 3, 3 ]
-        }
-      }
-    });
-    chart.point().position('Class*Score')
-      .color('Grade')
-      .adjust('jitter')
-      .shape('circle')
-      .opacity(0.65)
-      .size(4);
-    chart.render();
-
-
-    const chart1 = new this.$G2.Chart({
-      container: 'd2',
-      forceFit: true,
-      height: 400
-    });
-    chart1.source(data);
-    chart1.tooltip({
-      crosshairs: {
-        type: 'cross'
-      }
-    });
-    chart1.legend({
-      reversed: true // 图例项逆序显示
-    });
-    chart1.axis('Score', {
-      grid: null
-    });
-    // x轴的栅格线居中
-    chart1.axis('Class', {
-      tickLine: null,
-      subTickCount: 1, // 次刻度线个数
-      subTickLine: {
-        lineWidth: 1,
-        stroke: '#BFBFBF',
-        length: 4
-      },
-      grid: {
-        align: 'center', // 网格顶点从两个刻度中间开始
-        lineStyle: {
-          stroke: '#8C8C8C',
-          lineWidth: 1,
-          lineDash: [ 3, 3 ]
-        }
-      }
-    });
-    chart1.point().position('Class*Score')
-      .color('Grade')
-      .adjust('jitter')
-      .shape('circle')
-      .opacity(0.65)
-      .size(4);
-    chart1.render();
+    this.setSelectGradeListClassProgressOrRetrogress();
+    // this.setChart();
   }
 };
 </script>

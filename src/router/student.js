@@ -19,4 +19,9 @@ export const stuRoutes={
     name: 'stu_subject_trand',
     component: () => import('@/views/StuExamAnalyze/Subject_trand.vue')
   },
+  'stu_group_subject': {
+    path: 'stu_group_subject',
+    name: 'stu_group_subject',
+    component: () => import('@/views/StuExamAnalyze/Group_subject.vue')
+  },
 }

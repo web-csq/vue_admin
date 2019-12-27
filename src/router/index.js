@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import { schoolRoutes } from "./school"
 import { classRoutes } from "./class"
 import { stuRoutes } from "./student"
+import { subjectRoutes } from "./subject"
 import { baseAdminRoutes } from "./base"
 
 const originalReplace = Router.prototype.replace;
@@ -25,6 +26,11 @@ const commonRoutes = [
         component: () => import('../components/Login.vue')
     },
     {
+        path: '/register',
+        name: 'register',
+        component: () => import('../components/Register.vue')
+    },
+    {
       path: '/moduleshow',
       name: 'moduleshow',
       component: () => import('@/views/ModuleShow.vue')
@@ -43,6 +49,16 @@ const commonRoutes = [
           path:"/analyzelist",
           name: 'analyzelist',
           component: () => import('@/views/ModuleViews/AnalyzeList')
+        },
+        {
+          path:"/testdetail",
+          name: 'testdetail',
+          component: () => import('@/views/ModuleViews/TestDetail')
+        },
+        {
+          path:"/datalook",
+          name: 'datalook',
+          component: () => import('@/views/DataLook')
         }
       ],
       
@@ -69,7 +85,8 @@ export const asyncRoutes = {
     },
     ...schoolRoutes,
     ...classRoutes,
-    ...stuRoutes
+    ...stuRoutes,
+    ...subjectRoutes
 }
 
 const createRouter = () => new Router({mode:"history",base:"./",routes: commonRoutes})
