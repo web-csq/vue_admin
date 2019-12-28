@@ -11,7 +11,6 @@
     <!-- <h5 style="margin:20px 0 0 0;">
       诊断分析：<span style="color:#f10215">峰度大，成绩相比不稳定</span>
     </h5> -->
-    
   </div>
 </template>
 
@@ -66,7 +65,7 @@ export default {
           }
         });
         chart.coord().transpose();
-        chart.interval().position('country*count');
+        chart.interval().position('country*人数');
         chart.render();
 
         if(this.type != 0){
@@ -89,7 +88,7 @@ export default {
           for(let item of res.data){
             let obj = {};
             obj.country = item.className
-            obj.count = item.list.length 
+            obj['人数'] = item.list.length 
             this.chartList.push(obj);
             for(let itemList of item.list){
               let tabObj = {};

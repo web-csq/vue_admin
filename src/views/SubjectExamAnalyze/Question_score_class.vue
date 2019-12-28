@@ -1,12 +1,12 @@
 <template>
   <div>
     <div>
-      选择班级：
-      <Select v-model="subject" size="small" style="width:100px" @on-change="getJson">
-        <Option v-for="item in classList" :value="item.subjectId" :key="item.subjectId">{{ item.subjectName }}</Option>
-      </Select>
+      选择学科：
+       <RadioGroup v-model="subject" type="button" @on-change="getJson">
+        <Radio v-for="item in subjectList" :label="item.subjectId" :key="item.subjectId">{{item.subjectName}}</Radio>
+      </RadioGroup>
     </div>
-    <div class="chart-c">
+    <div class="chart-c" v-show="chartShow">
       <div id="d1"></div>
     </div>
   </div>
@@ -38,9 +38,10 @@ export default {
   name:"subject_question_score_class",
   data(){
     return{
+      chartShow:true,
       subject:"",
-      classList:[],
-      subject:""
+      subjectList:[],
+      classList:[]
     }
   },
   methods:{
@@ -51,7 +52,11 @@ export default {
       schoolId:this.examInfo.schoolId,
       subjectId:this.subject,
       }).then(res=>{
-        if(res.data.length===0) return _this.$message.warning("该科目暂无数据")
+        if(res.data.length===0){
+          _this.chartShow=false
+          return _this.$message.warning("该学科暂无数据")
+        }
+        
         let list=[]
         for(let item of res.data){
           let obj={}
@@ -105,8 +110,8 @@ export default {
   },
   created(){
     _this=this
-    this.classList=this.examInfo.subjectList
-    this.subject=this.classList[0].subjectId
+    this.subjectList=this.examInfo.subjectList
+    this.subject=this.subjectList[0].subjectId
     this.getJson()
   },
   mounted(){

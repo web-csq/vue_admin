@@ -20,3 +20,9 @@ export const subjectCombinationAnalysis=(data)=>
     url:"/studentAnalysisReport/subjectCombinationAnalysis",
     data
   })
+
+export const totalScoreAndRanking=(data)=>
+  post({
+    url:"/studentAnalysisReport/totalScoreAndRanking",
+    data
+  })

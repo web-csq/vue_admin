@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="chart-c">
+    <div class="chart-c" style="max-width:1280px">
       <div id="d1"></div>
     </div>
   </div>
@@ -23,7 +23,7 @@ export default {
   name:"subject_class_comparison",
   data(){
     return{
-
+      classList:[]
     }
   },
   computed:{
@@ -60,11 +60,9 @@ export default {
         itemTpl: '<li data-index={index} style="margin-bottom:4px;">'
           + '<span style="background-color:{color};" class="g2-tooltip-marker"></span>'
           + '{name}<br/>'
-          + '<span style="padding-left: 16px">最大值：{high}</span><br/>'
-          + '<span style="padding-left: 16px">上四分位数：{q3}</span><br/>'
-          + '<span style="padding-left: 16px">中位数：{median}</span><br/>'
-          + '<span style="padding-left: 16px">下四分位数：{q1}</span><br/>'
-          + '<span style="padding-left: 16px">最小值：{low}</span><br/>'
+          + '<span style="padding-left: 16px">最高分：{high}</span><br/>'
+          + '<span style="padding-left: 16px">平均分：{median}</span><br/>'
+          + '<span style="padding-left: 16px">最低分：{low}</span><br/>'
           + '</li>'
       });
       chart.schema().position('x*range')
@@ -97,18 +95,20 @@ export default {
       schoolId:this.examInfo.schoolId
     }).then(res=>{
       if(res.code==="0000"){
-        let list=[]
+        let list=[],classList=[]
+
         for(let item of res.data){
-          let obj={}
-          obj.x=item.subjectName
+          let obj={};
+          obj.x=item.className+item.subjectName
+          obj.q1=(item.medianScore+item.minScore)*0.5
           obj.low=item.minScore
+          obj.q3=(item.medianScore+item.maxScore)*0.5
           obj.high=item.maxScore
-          obj.median=item.medianScore
-          obj.q1=item.avgScore
+          obj.median=item.avgScore
           list.push(obj)
         }
-        console.log(list)
-        this.initChart(data)
+        
+        this.initChart(list)
 
       }
     })

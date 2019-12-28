@@ -1,12 +1,16 @@
 <template>
   <div>
-    <div v-if="isShow">
+    选择班级：<Select v-model="selClassId" style="width:200px" @on-change="selClassFn">
+                <Option :value="item.id" v-for="item in classList" :key="item.id">{{item.name}}</Option>
+            </Select>
+    <!-- 班级退步学生 -->
+    <div class="divbox" v-if="isShow">
       <div>绝对名次分布</div>
       <div class="chart-c">
         <div id="d1"></div>
       </div>
     </div>
-    <div v-if='isShow'>
+    <div v-if="isShow">
       <div>相对名次分布</div>
       <div class="chart-c">
         <div id="d2"></div>
@@ -58,18 +62,27 @@ const data=[
     "Score": 10
     }
 ]
-import { selectGradeListClassProgressOrRetrogress } from "@/api/schoolAnalyze"
+import { selectGradeListClassProgressOrRetrogress } from "@/api/classAnalyze"
+import { listClass } from "@/api/user"
 import { mapState } from "vuex"
 export default {
-  name: "s_total_pro_stu_class",
+  name: "c_class_total_reg_stu",
   data() {
     return {
       absoluteList:[],//绝对
       relativeList:[],
+      classList:[],//班级列表
+      selClassId:0,//classID
+      type:0,
       isShow:false,
     }
   },
   methods:{
+    selClassFn(){
+      this.type++;
+      // console.log(this.selClassId)
+      this.setSelectGradeListClassProgressOrRetrogress();
+    },
     setChart(dom,data){
       const chart = new this.$G2.Chart({
         container: dom,
@@ -116,14 +129,27 @@ export default {
         .size(4);
         chart.legend(false);
       chart.render();
+      if( this.type != 0){
+          this.$nextTick(()=>{
+            if(document.getElementById("d1").children.length>1){
+              document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
+            }
+            if(document.getElementById("d2").children.length>1){
+              document.getElementById("d2").removeChild(document.getElementById("d2").firstChild)
+            }
+        })
+      }
     },
     async setSelectGradeListClassProgressOrRetrogress(){
       this.absoluteList = [];
       this.relativeList = [];
       selectGradeListClassProgressOrRetrogress({
         examId:this.examInfo.id,//97
+        classId : this.selClassId,//calssID
+        schoolId: this.examInfo.schoolId
       }).then( res => {
           // console.log(res);
+        if(res.code=="0000"){
           if(res.data.absolute != null){//绝对
             this.isShow = true
             let absoluteData = res.data.absolute;
@@ -132,16 +158,17 @@ export default {
               for(let j in absoluteData[i].list){
                 let obj = {};
                 obj.Class = classnames;     
-                if(absoluteData[i].list[j].gradeRank < 0){
+                if(absoluteData[i].list[j].gradeRank > 0){
                   obj.Grade = absoluteData[i].list[j].userName       
-                  obj.Score = -absoluteData[i].list[j].gradeRank
+                  obj.Score = absoluteData[i].list[j].gradeRank
                 }
                 this.absoluteList.push(obj);
               }
             }
-            this.$nextTick( ()=> {
+            this.$nextTick(()=>{
               this.setChart('d1',this.absoluteList);
             })
+            
           }
           if(res.data.relative != null){
             this.isShow = true
@@ -151,21 +178,35 @@ export default {
               for(let j in relativeData[i].list){
                   let obj = {};
                   obj.Class = classnames;
-                  if(relativeData[i].list[j].gradeRank < 0){
+                  if(relativeData[i].list[j].gradeRank > 0){
                     obj.Grade = relativeData[i].list[j].userName
-                    obj.Score = -relativeData[i].list[j].gradeRank
+                    obj.Score = relativeData[i].list[j].gradeRank
                   }
                   this.relativeList.push(obj);
               }
             }
-            this.$nextTick( () => {
+            this.$nextTick( ()=> {
               this.setChart('d2',this.relativeList);
             })
           }
           if(res.data.relative == null || res.data.absolute == null){
+            this.isShow = false
             this.$Message.warning('暂无分析数据');
-            this.isShow = false;
           }
+        }
+      })
+    },
+    async getClassList(){//得到班级列表
+      this.classList = [];
+      listClass({
+        schoolId:this.examInfo.schoolId,
+        gradeId: this.examInfo.gradeId
+      }).then( res => {
+        if(res.code == "0000"){
+          this.selClassId = res.data[0].id
+          this.classList = res.data;
+          this.setSelectGradeListClassProgressOrRetrogress();
+        }
       })
     }
   },
@@ -175,12 +216,14 @@ export default {
     })
   },
   mounted() {
-    this.setSelectGradeListClassProgressOrRetrogress();
-    // this.setChart();
+    this.getClassList();
   }
 };
 </script>
 
 <style lang="scss" scoped>
 @import "~@/styles/index.scss";
+.divbox{
+  margin: 10px 0;
+}
 </style>

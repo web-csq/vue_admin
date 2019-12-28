@@ -17,13 +17,15 @@
                 ref="upload"
                 :format ="['xlsx','xls']"
                 name="file"
+                :headers='{"x-requested-with":"XMLHttpRequest"}'
                 :before-upload="handleUpload"
                 :on-format-error="handleFormatError"
                 :on-error="handleError"
                 :on-success="handleSuccess"
+                :show-upload-list="false"  
                 :with-credentials='true'
                 :action="baseURL+'/user/useExcelToImportStudents'">
-                <Button icon="ios-cloud-upload-outline" type="primary">批量导入学生</Button>
+                <Button icon="ios-cloud-upload-outline" type="primary" :loading='updataLoading'>批量导入学生</Button>
             </Upload>
             <!-- <Button
                 class=" right-10"
@@ -132,6 +134,7 @@ export default {
             addStuModal:false,
             updataModal:false,//修改学生模态框
             loading:true,
+            updataLoading:false,
             page:{
                 pageNum:1,
                 pageSize:10,
@@ -322,19 +325,35 @@ export default {
             
         },
         handleUpload (file) {//上传前
-            console.log(file)
+            // console.log(file)
+            this.updataLoading = true
         },
         handleSuccess(res,file){//上传成功，如果上传成功 clearFiles，清空文件
+            this.updataLoading = false
             if(res.code === "0000"){
-                if(res.count == 0){
-                    this.$Notice.error({
-                        title: '数据导入失败！',
+                let successCount = 0;
+                let errorCount = 0;
+                if(JSON.stringify(res.data.successData) != "{}"){
+                    for(let i in res.data.successData){
+                        successCount ++
+                    }
+                }
+                if(JSON.stringify(res.data.errorData) != "{}"){
+                    for(let i in res.data.errorData){
+                        errorCount ++
+                    }
+                }
+                if(successCount == 0 && errorCount != 0){
+                    this.$Notice.warning({
+                        title: `数据导入失败${errorCount}条`,
                     });
-                }else{
-                    this.$Message.success("数据导入成功！");
+                }
+                if(successCount != 0 && errorCount == 0){
+                    this.$Notice.success({
+                        title: `数据成功导入${successCount}条`,
+                    });
                     this.getListUserByRoleIdAndPage();
                 }
-
             }else{
                 this.$Message.error("数据导入失败！")
             }

@@ -1,14 +1,19 @@
 <template>
   <div>
-    <div class="chart-c">
+    选择班级：<Select  v-model="selClassId" style="width:200px" @on-change="selClassFn">
+      <Option :value="0" >全部</Option>
+        <Option :value="item.id" v-for="item in classList" :key="item.id">{{item.name}}</Option>
+    </Select>
+    <div class="chart-c divbox" v-show="isShow">
       <div id="d1"></div>
     </div>
-    <div class="tab-container">
-      <div class="tab-title">总分学困学生班级报表</div>
-      <Table border :columns="columns" :data="dataList" ></Table>
+    <div class="tab-container" v-show="isShow">
+      <div class="tab-title">班级分学科准优秀学生报表</div>
+      <Table border :columns="columns" :data="dataList" :loading='loading'></Table>
     </div>
   </div>
 </template>
+
 <script>
 const data=[
     {
@@ -52,10 +57,11 @@ const data=[
     "Score": 10
     }
 ]
-import { selectGradeListClassLevleSix } from "@/api/schoolAnalyze"
+import { selectGradeListClassLevleTwo } from "@/api/classAnalyze"
+import { listClass } from "@/api/user"
 import { mapState } from "vuex"
 export default {
-  name: "s_total_score_quasi_good_stu",
+  name: "c_class_by_subject_excellent_stu",
   data() {
     return {
       absoluteList:[],//绝对
@@ -80,11 +86,21 @@ export default {
                 key: 'className',
                 align:'center'
             },
-        ],
-        dataList:[],
+      ],
+      dataList:[],
+      selClassId:'',
+      classList:[],
+      type:0,
+      loading:true,
+      isShow:false,
     }
   },
   methods:{
+    selClassFn(){
+      this.type ++
+      this.loading = true;
+      this.setSelectGradeListClassLevleTwo();
+    },
     setChart(dom,data){
       const chart = new this.$G2.Chart({
         container: dom,
@@ -129,20 +145,31 @@ export default {
         .shape('circle')
         .opacity(0.65)
         .size(4);
-        chart.legend(false);
+      chart.legend(false);
       chart.render();
+      if(this.type != 0){
+        this.$nextTick(()=>{
+            if(document.getElementById('d1').children.length>1){
+                document.getElementById('d1').removeChild(document.getElementById('d1').firstChild)
+            }
+        })
+      }
     },
-    async setSelectGradeListClassLevleSix(){
+    async setSelectGradeListClassLevleTwo(){
       this.absoluteList = [];
-      this.data = [];
-      selectGradeListClassLevleSix({
-        examId: this.examInfo.id,//97
-      }).then( res => {
-
-        if(res.code == "0000"){//相对
+      this.dataList = [];
+      let obja = {}
+      if(this.selClassId != ''){
+        obja.classId = this.selClassId;
+      }
+      obja.examId = this.examInfo.id;
+      selectGradeListClassLevleTwo(obja).then( res => {
           // console.log(res);
+        if(res.code == "0000"){
+          this.loading = false
           if(res.data != null){//绝对
             if(res.data.length >0){
+              this.isShow = true
               let absoluteData = res.data;
               for( let i in absoluteData){
                 let classnames = absoluteData[i].className;
@@ -161,16 +188,26 @@ export default {
                     this.dataList.push(tabData);
                 }
               }
-              this.setChart('d1',this.absoluteList);
-              
+              this.$nextTick( ()=> {
+                this.setChart('d1',this.absoluteList);
+              })
             }else{
+              this.isShow = false
               this.$Message.warning('暂无分析数据');
             }
           }else{
+            this.isShow = false
             this.$Message.warning('暂无分析数据');
           }
-          
         }
+      })
+    },
+    async getClassList(){
+      listClass({
+        schoolId:this.examInfo.schoolId,
+        gradeId:this.examInfo.gradeId
+      }).then( res => {
+        this.classList = res.data;
       })
     }
   },
@@ -180,11 +217,15 @@ export default {
     })
   },
   mounted() {
-    this.setSelectGradeListClassLevleSix();
+    this.getClassList();
+    this.setSelectGradeListClassLevleTwo();
   }
 };
 </script>
 
 <style lang="scss" scoped>
 @import "~@/styles/index.scss";
+.divbox{
+  margin: 20px 0 10px 0;
+}
 </style>

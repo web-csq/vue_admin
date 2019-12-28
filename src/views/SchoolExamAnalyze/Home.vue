@@ -10,19 +10,19 @@
           <Col span="6">
             <div class="topBox">
               <strong>{{count.classCount}}</strong>
-              <p>参与班级数</p>
+              <p>本校参与班级数</p>
             </div>
           </Col>
           <Col span="6">
             <div class="topBox">
               <strong>{{count.subjectCount}}</strong>
-              <p>参与学科数</p>
+              <p>本校参与学科数</p>
             </div>
           </Col>
           <Col span="6">
             <div class="topBox">
               <strong>{{count.studentCount}}</strong>
-              <p>参与考生数</p>
+              <p>本校参与考生数</p>
             </div>
           </Col>
       </Row>
@@ -136,7 +136,7 @@ export default {
           gradeId :this.examInfo.gradeId ,
           schoolId :this.examInfo.schoolId
         }).then( res => {
-          console.log( res );
+          // console.log( res );
           if( res.code == "0000"){
             this.count = {
               schoolCount:res.data.schoolCount,

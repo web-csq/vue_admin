@@ -1,12 +1,16 @@
 <template>
   <div>
-    <div>绝对名次分布</div>
-    <div class="chart-c">
-      <div id="d1"></div>
+    <div v-if="isShow">
+      <div>绝对名次分布</div>
+      <div class="chart-c">
+        <div id="d1"></div>
+      </div>
     </div>
-    <div>相对名次分布</div>
-    <div class="chart-c">
-      <div id="d2"></div>
+    <div v-if="isShow">
+      <div>相对名次分布</div>
+      <div class="chart-c">
+        <div id="d2"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -62,6 +66,7 @@ export default {
     return {
       absoluteList:[],//绝对
       relativeList:[],
+      isShow:false,
     }
   },
   methods:{
@@ -119,8 +124,9 @@ export default {
         examId:this.examInfo.id,//97
       }).then( res => {
         if(res.code == "0000"){//相对
-          console.log(res);
+          // console.log(res);
           if(res.data.absolute != null){//绝对
+            this.isShow = true
             let absoluteData = res.data.absolute;
             for( let i in absoluteData){
               let classnames = absoluteData[i].className;
@@ -134,9 +140,12 @@ export default {
                 }
               }
             }
-            this.setChart('d1',this.absoluteList);
+            this.$nextTick( ()=> {
+              this.setChart('d1',this.absoluteList);
+            })
           }
           if(res.data.relative != null){
+            this.isShow = true
             let relativeData = res.data.relative;
             for( let i in relativeData){
               let classnames = relativeData[i].className;
@@ -150,9 +159,12 @@ export default {
                   }
               }
             }
-            this.setChart('d2',this.relativeList);
+            this.$nextTick( ()=> {
+              this.setChart('d2',this.relativeList);
+            })
           }
           if(res.data.relative == null || res.data.absolute == null){
+            this.isShow = false
             this.$Message.warning('暂无分析数据');
           }
         }

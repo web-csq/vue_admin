@@ -16,3 +16,40 @@ export const listStudentAnswerSheetDetail=(data)=>
     url:"/subjectAnalysisReport/listStudentAnswerSheetDetail",
     data
   })
+
+export const subjectResultsClassLevelOne=(data)=>
+  post({
+    url:"/subjectAnalysisReport/subjectResultsClassLevelOne",
+    data
+  })
+
+export const subjectResultsClassLevelTwo=(data)=>
+  post({
+    url:"/subjectAnalysisReport/subjectResultsClassLevelTwo",
+    data
+  })
+
+export const subjectResultsClassLevelThree=(data)=>
+  post({
+    url:"/subjectAnalysisReport/subjectResultsClassLevelThree",
+    data
+  })
+
+export const subjectResultsClassLevelFour=(data)=>
+  post({
+    url:"/subjectAnalysisReport/subjectResultsClassLevelFour",
+    data
+  })
+
+export const subjectResultsClassLevelFive=(data)=>
+  post({
+    url:"/subjectAnalysisReport/subjectResultsClassLevelFive",
+    data
+  })
+
+export const listExamSubjectAnswer=(data)=>
+  post({
+    url:"/subjectAnalysisReport/listExamSubjectAnswer",
+    data
+  })
+

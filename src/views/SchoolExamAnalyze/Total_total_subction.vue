@@ -126,7 +126,7 @@ export default {
     },
     async setSelectGradeDifSection(){//总分全体分段统计
       this.data = [];
-
+      this.chartList = [];
       selectGradeDifSection({
         examId : this.examInfo.id,
         section : this.section,
@@ -143,6 +143,7 @@ export default {
             this.chartList.push(obj)
           }
           this.setLineChart(this.chartList);
+          // console.log( this.chartList)
         }
       })
     }

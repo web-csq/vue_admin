@@ -128,7 +128,7 @@ export default {
       },{
         "content-type":"application/json"
       }).then( res => {
-        console.log( res )
+        // console.log( res )
         this.loading = false;
         this.tabLoading = false;
         if(res.code == "0000"){

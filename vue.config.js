@@ -25,7 +25,7 @@ module.exports = {
         proxy: {
             '/api': {
                 target:'https://test.spss.soiiu.com:8580', //代理接口
-                //target:'https://localhost:8580', //代理接口
+                // target:'https://localhost:8580', //代理接口
                 changeOrigin: true,
                 ws: true,
                 pathRewrite: {

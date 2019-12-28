@@ -82,6 +82,7 @@ export default {
     async setSelectGradeListClassDifSection(){//总分班级
         this.data = [];
         this.columns = [];
+        this.chartData = [];
         selectGradeListClassDifSection({
           examId :this.examInfo.id,
           section :this.sectionList 
@@ -114,7 +115,6 @@ export default {
                 for(let  j in titles){
                   this.columns.push({ title:titles[j].name,key:titles[j].name,align:'center'})
                 }
-                // console.log(this.data);
                 this.setChart(this.chartData);
               }
 

@@ -108,6 +108,31 @@ export default{
                   type: 'ios-link',
                   name: 'c_class_subject_analyze',
                   text: '班级学科分析'
+              },
+              {
+                  type: 'ios-link',
+                  name: 'c_class_total_pro_stu',
+                  text: '班级进步学生'
+              },
+              {
+                  type: 'ios-link',
+                  name: 'c_class_total_reg_stu',
+                  text: '班级退步学生'
+              },
+              {
+                  type: 'ios-link',
+                  name: 'c_totall_subject_stu_analyze',
+                  text: '全体学科学生分析'
+              },
+              {
+                  type: 'ios-link',
+                  name: 'c_class_by_subject_excellent_stu',
+                  text: '班级分析学科准优秀生'
+              },
+              {
+                  type: 'ios-link',
+                  name: 'c_class_by_subject_good_stu',
+                  text: '班级分析学科准良好生'
               }
             ]
           },
@@ -164,7 +189,38 @@ export default{
               {
                 type:"ios-leaf-outline",
                 name:"subject_question_score_class",
-                text:"学科小题得分班级统计"
+                text:"学科小题得分班级统计",
+                hidden:true
+              },
+              {
+                type:"ios-leaf-outline",
+                name:"subject_exec_stu_class",
+                text:"学科成绩优秀学生班级分布"
+              },
+              {
+                type:"ios-leaf-outline",
+                name:"subject_subexec_stu_class",
+                text:"学科成绩准优秀学生班级分布"
+              },
+              {
+                type:"ios-leaf-outline",
+                name:"subject_well_stu_class",
+                text:"学科成绩良好学生班级分布"
+              },
+              {
+                type:"ios-leaf-outline",
+                name:"subject_subwell_stu_class",
+                text:"学科成绩准良好学生班级分布"
+              },
+              {
+                type:"ios-leaf-outline",
+                name:"subject_pass_stu_class",
+                text:"学科成绩及格学生班级分布"
+              },
+              {
+                type:"ios-leaf-outline",
+                name:"subject_diffi_stu_class",
+                text:"学科成绩学困生班级分布"
               }
             ]
           }

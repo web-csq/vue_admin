@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Message } from "iview"
-import jscookie from "js-cookie"
 import { resetTokenAndClearUser } from "@/utils/router"
+import { Spin } from 'iview';
 let baseURL=process.env.VUE_APP_URL;
 
 /**
@@ -10,7 +10,7 @@ let baseURL=process.env.VUE_APP_URL;
 const http = axios.create({
   baseURL,
   withCredentials:true,
-  timeout: 600000
+  timeout: 6000
 })
 /**
  * axios 拦截器
@@ -19,8 +19,14 @@ const http = axios.create({
 http.interceptors.request.use(
   config => {
 
+  if(config.url.indexOf("/login")==-1){
+    // Spin.show();
+  }
+   
+  
     
-    // config.headers["x-requested-with"]="XMLHttpRequest"
+    
+    config.headers["x-requested-with"]="XMLHttpRequest"
     return config
   },
   error => {
@@ -34,6 +40,11 @@ http.interceptors.request.use(
 // response interceptor
 http.interceptors.response.use(
   response => {
+   
+    setTimeout(()=>{
+      Spin.hide();
+    },500)
+    
     if(response.data.code==="8888"){
       resetTokenAndClearUser()
     }

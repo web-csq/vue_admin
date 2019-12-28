@@ -558,7 +558,8 @@ aside {
     transform: scaleY(1.2);
 }
 .aside-big {
-    min-width: 250px;
+    min-width: 290px;
+    overflow: hidden;
 }
 /* 主体页面 */
 .sec-right {
@@ -761,7 +762,8 @@ a {
     margin: 0 10px 0 0;
   }
   h4{
-    font-size: 18px;
+    font-size: 18px !important;
+    font-weight: 400 !important;
   }
 }
 .nav-box:hover{

@@ -16,7 +16,7 @@
     <div>
       学生列表：
     </div>
-    <div style="margin-top: 20px;width:80%" class="radio-group">
+    <div style="max-width:80%" class="radio-group">
       <el-radio-group v-model="stu" size="small" @change="select">
         <el-radio v-for="(item,index) in stuList" :key="index" :label="item.id" border>{{item.truename}}</el-radio>
       </el-radio-group>
@@ -179,7 +179,12 @@ export default {
 
 <style lang="scss" scoped>
 @import "~@/styles/index.scss";
+.radio-group >>> .el-radio.is-bordered+.el-radio.is-bordered{
+  margin-left: 0px; 
+  margin-right: 15px ;
+  margin-top:10px;
+}
 .radio-group >>> .el-radio{
-  margin: 0;
+  margin-right: 15px ;
 }
 </style>
