@@ -16,9 +16,21 @@
           >{{examInfo.status===0 || examInfo.status===null ?"未导入成绩":(examInfo.status===1?"未分析":"已分析")}}</span>
           <span style="font-size:14px;margin:0 0 0 10px">(注：导入成绩后方可生成报表)</span>
         </span>
-        <span style="margin-left:auto" class="cent">
-          <Button type="primary" size="small" :loading="analyzeButton" @click="examAnalyze">生成报表</Button>
-        </span>
+        <div style="margin-left:auto" class="cent">
+            <span >
+              <Button type="info" size="small" icon="ios-cloud-download" >
+                <a style="color:#fff;"  href="http://soiiu-exam.oss-cn-beijing.aliyuncs.com/download/%E6%80%BB%E5%88%86%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx">总分导入模板</a>    
+              </Button>
+            </span>
+            <span >
+              <Button type="info" size="small" style="margin: 0 15px 0 10px;" icon="ios-cloud-download">
+                <a style="color:#fff;"  href="http://soiiu-exam.oss-cn-beijing.aliyuncs.com/download/%E5%B0%8F%E9%A2%98%E5%BE%97%E5%88%86%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx">小题得分导入模板</a>    
+              </Button>
+            </span>
+            <span style="margin-left:auto" class="cent">
+              <Button type="primary" size="small" :loading="analyzeButton" @click="examAnalyze">生成报表</Button>
+            </span>
+        </div>
       </div>
     </div>
 
@@ -42,17 +54,17 @@
       :scrollable="false"
       v-model="modalShow"
       :mask-closable="false"
-      @on-ok="handleSubmit('formValidate')"
       @on-cancel="modalShow=false"
-      :closable="false"
+      :closable="true"
+      :footer-hide='true'
     >
-      <div class="con" style="margin:0">
+      <!-- <div class="con" style="margin:0">
         <div @click="download(1)">总分表模板下载</div>
         <div>小题得分表模板下载</div>
         <div>答案表模板下载</div>
-      </div>
+      </div> -->
       <div style="margin:10px 0 0 0">
-        <Upload
+        <!-- <Upload
           ref="upload2"
           :on-success="successUp"
           :with-credentials="true"
@@ -64,17 +76,18 @@
           :action="baseURL+'/exam/importSubjectScoreByExcel'"
         >
           <Button type="primary" size="small" style="margin-right: 5px">导入学科总分</Button>
-        </Upload>
+        </Upload> -->
         <Upload
           ref="upload3"
-          :on-success="successUp"
+          :on-success="successUpSmall"
+          :before-upload="handleUpload"
           :with-credentials="true"
           :format="['xlsx','xls']"
           accept=".xlsx, xls"
           :data="{examId:examId,subjectId:tableData[subjecIndex].subjectId,subjectName:tableData[subjecIndex].subjectName}"
           :action="baseURL+'/exam/importSubjectItemScoreByExcel'"
         >
-          <Button type="primary" size="small" style="margin-right: 5px">导入小题分数</Button>
+          <Button type="primary" size="small" style="margin-right: 5px" :loading='smallLoading'>导入小题分数</Button>
         </Upload>
       </div>
     </Modal>
@@ -348,7 +361,8 @@ export default {
           key: "action"
         }
       ],
-      tableData: []
+      tableData: [],
+      smallLoading:false,
     };
   },
   computed: {},
@@ -747,6 +761,22 @@ export default {
         }
         _this.analyzeButton = false;
       });
+    },
+    handleUpload (file) {//上传前
+        this.smallLoading = true
+    },
+    successUpSmall(res){
+      this.smallLoading = false;
+      this.tableLoading = false
+      if (res.code === "0000") {
+        this.$message.success(res.message);
+        setTimeout(() => {
+          _this.$router.go(0);
+        }, 800);
+      } else {
+        this.$message.error(res.message);
+      }
+
     },
     successUp(res) {
       if (res.code === "0000") {

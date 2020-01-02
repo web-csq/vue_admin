@@ -1,27 +1,26 @@
 <template>
   <div>
     <div class="top_ranking">
-
-      <div class="ranking-box" v-for="(item,index) in rankingData" :key="item.userId">
-        <div class="box-top">
-          <img :src="imgHolder" alt="">
-          <div class="intr">
-            <h4>姓名：{{item.userName}}</h4>
-            <h6>年级：{{item.gradeName}}</h6>
-            <h6>排名：{{item.gradeRank}}</h6>
+      <div class="top_ranking" >
+        <div class="ranking-box" v-for="(item,index) in rankingData" :key="index">
+          <div class="box-top">
+              <h4>姓名：<span style="color:#409EFF">{{item.userName}}</span> </h4>
+              <h6>排名：{{item.rankings}}</h6>
+          </div>
+          <div class="tab-c">
+            <div :id="'d'+(index+1)"></div>
           </div>
         </div>
-        <div class="tab-c">
-          <div :id="'d'+(index+1)" ></div>
-        </div>
       </div>
-  
 
     </div>
     
     <div class="tab-container">
-      <div class="tab-title">总分排名</div>
-      <Table border :columns="columns" :data="data" :loading="loading">
+      <div class="tab-title">
+        总分排名
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table border ref="table1" :columns="columns" :data="data" :loading="loading">
             <!-- <template slot-scope="{ row }" slot="action">
                 <Button type="primary" size="small" style="margin-right: 5px" @click="goAnalyze(row)">分析</Button>
             </template> -->
@@ -47,6 +46,11 @@ export default {
     }
   },
   methods:{
+    exportData(){//导出全校排名数据
+        this.$refs.table1.exportCsv({
+          filename: this.examInfo.name +'成绩总计'
+      });
+    },
     goAnalyze(row){
       console.log(row)
     },
@@ -62,7 +66,7 @@ export default {
         container: id,
         forceFit: true,
         height: 300,
-        padding: [ 10, 10, 10, 10 ]
+        padding: [ 10, 20, 10, 20 ]
       });
       chart.source(dv, {
         score: {
@@ -137,46 +141,49 @@ export default {
             if (res.data.length > 0) {
               this.columns.push(
                 {
+                  title:'班级',
+                  key:'className',
+                  align:'center',
+                  minWidth:90,
+                },
+                {
                     title: '姓名',
                     key: 'userName',
                     align:'center',
+                    minWidth:90,
                 },
-                {
-                    title: '年级',
-                    key: 'gradeName',
-                    align:'center'
-                },
-                {
-                  title:'班级',
-                  key:'className',
-                  align:'center'
-                },
+                
                 {
                   title:'年级排名',
                   key:'gradeRank',
-                  align:'center'
+                  align:'center',
+                  minWidth:90,
                 },
                 {
                   title:'班级排名',
                   key:'classRank',
-                  align:'center'
+                  align:'center',
+                  minWidth:100,
                 },
                 {
                     title: '总分',
                     key: 'score',
-                    align:'center'
+                    align:'center',
+                    minWidth:80,
                 }
               )
               for(let item of res.data[0].studentAnswerSheetList){
                 let obj={}
                 obj.title=item.subjectName.substring(2)
                 obj.key=item.subjectName.substring(2)
-                obj.align='center'
+                obj.align='center';
+                obj.minWidth=90,
                 this.columns.push(obj)
               }
               for (let i in res.data) {
                 let newObj = {};
                   if (i < 10) {
+                    res.data[i].rankings = "第" + res.data[i].gradeRank + '名'
                     this.rankingData.push(res.data[i]);
                   }
                   newObj.userName = res.data[i].userName;
@@ -191,7 +198,7 @@ export default {
                 }
                 this.data.push(newObj);
               }
-              
+              // console.log(this.rankingData);
             }
           }
         }
@@ -220,12 +227,14 @@ export default {
 @import "~@/styles/index.scss";
 .box-top{
   display: flex;
-  justify-content: space-around;
-  .intr{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    margin: 0 0 0 10px;
+  justify-content: space-between;
+  h6{
+    background-color: #409EFF;
+    color:#fff;
+    padding: 5px 10px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    margin: -10px -10px 0 0;
   }
 }
 .top_ranking{
@@ -234,9 +243,10 @@ export default {
 }
 .ranking-box{
   // display: flex;
-  // border: 1px solid #ddd;
+  border: 1px solid #ddd;
   padding: 10px;
-  width: 250px;
-  margin:0 50px 0 0 ;
+  width: 280px;
+  margin:10px 30px 0 0 ;
+  border-radius: 8px;
 }
 </style>

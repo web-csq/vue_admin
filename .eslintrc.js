@@ -23,7 +23,12 @@ export default{
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "presets": [["es2015", { "modules": false }]],
+    "presets": [
+      ["es2015", { "modules": false }],
+      ["@vue/app", {
+        "useBuiltIns": false
+      }]
+    ],
     "plugins": [
       [
         "component",

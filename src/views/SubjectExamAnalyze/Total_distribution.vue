@@ -62,6 +62,11 @@ export default {
           }
         }
       });
+      chart
+        .line()
+        .position('科目*分数')
+        .color("#d9d9d9")
+        .shape('smooth');
       chart.interval().position('科目*分数').color('name')
         .adjust([{
           type: 'dodge',

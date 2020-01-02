@@ -26,13 +26,8 @@ export default {
       loading:true,
       columns: [
             {
-                title: '排名',
-                key: 'gradeRank',
-                align:'center'
-            },
-            {
-                title: '总分',
-                key: 'score',
+                title: '班级',
+                key: 'className',
                 align:'center'
             },
             {
@@ -41,8 +36,13 @@ export default {
                 align:'center'
             },
             {
-                title: '班级',
-                key: 'className',
+                title: '总分',
+                key: 'score',
+                align:'center'
+            },
+            {
+                title: '排名',
+                key: 'gradeRank',
                 align:'center'
             },
         ],

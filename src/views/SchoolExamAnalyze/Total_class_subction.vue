@@ -50,10 +50,11 @@ export default {
       chart.source(data,{
         "分数":{
           min:0,
-          max:1000,
+          // max:1000,
           tickCount:11
         }
       });
+      
       chart.axis("分段",{
           title: {
             textStyle: {
@@ -70,7 +71,10 @@ export default {
           type: 'dodge',
           marginRatio: 1 / 32
         }]);
+        
       chart.render();
+      
+      
       if(this.type != 0){
         this.$nextTick(()=>{
           if(document.getElementById("d1").children.length>1){
@@ -101,19 +105,24 @@ export default {
                   let name = i;
                   for(let k in tabList[i]){
                     obj[tabList[i][k].name] = tabList[i][k].count;
-                    let newChartObj = {};
-                    newChartObj.name = name;
-                    newChartObj['分数'] = tabList[i][k].count;
-                    newChartObj['分段'] = tabList[i][k].name;
-                    this.chartData.push(newChartObj);
+                      // if(tabList[i][k].count > 0){
+                        let newChartObj = {};
+                        newChartObj.name = name;
+                        newChartObj['分数'] = tabList[i][k].count;
+                        newChartObj['分段'] = tabList[i][k].name;
+                        this.chartData.push(newChartObj);
+                      // }
+                      
+                    
                   }
                   this.data.push(obj);
                   
                 }
                 // console.log('数据',this.chartData)
-                this.columns.push({title: '班级',key: 'section',align:'center'})
+                
+                this.columns.push({title: '班级',key: 'section',align:'center',width:90,fixed:'left'})
                 for(let  j in titles){
-                  this.columns.push({ title:titles[j].name,key:titles[j].name,align:'center'})
+                  this.columns.push({ title:titles[j].name,key:titles[j].name,align:'center',minWidth:90})
                 }
                 this.setChart(this.chartData);
               }

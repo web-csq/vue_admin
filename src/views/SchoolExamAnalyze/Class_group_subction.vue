@@ -71,7 +71,7 @@ export default {
       chart.source(data,{
         "sales":{
           min: 0,
-          max: 600,
+          // max: 600,
           alias:"人数",
           tickCount: 12
         },
@@ -137,7 +137,8 @@ export default {
               this.columns.push({
                 title: "分数段",
                 key: 'types',
-                align:'center'
+                align:'center',
+                width:90,
               })
               let tabObj = {'types':'人数'};
               for(let i in res.data){
@@ -148,7 +149,8 @@ export default {
                 this.columns.push({
                   title: res.data[i].name,
                   key: res.data[i].name,
-                  align:'center'
+                  align:'center',
+                  minWidth:90
                 })
                 tabObj[res.data[i].name] = res.data[i].count
               }

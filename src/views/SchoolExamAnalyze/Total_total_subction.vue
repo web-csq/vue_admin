@@ -9,7 +9,7 @@
     </div>
     <div class="tab-container">
       <div class="tab-title">总分全体分段报表</div>
-      <Table border :columns="columns" :data="data"></Table>
+      <Table border :columns="columns" :data="data" :loading='tabLoading'></Table>
     </div>
     <!-- <h5 style="margin:20px 0 0 0;">
       诊断分析：<span style="color:#f10215">峰度大，成绩相比不稳定</span>
@@ -26,6 +26,7 @@ export default {
   name:"S_total_total_subction",
   data(){
     return{
+      tabLoading:false,
       columns: [
             {
                 title: '最高分',
@@ -75,7 +76,7 @@ export default {
       chart.source(data,{
         "sales":{
           min: 0,
-          max: 600,
+          // max: 600,
           alias:"人数",
           tickCount: 12
         },
@@ -134,6 +135,7 @@ export default {
       }).then( res => {
         // console.log( res );
         this.loading = false;
+        this.tabLoading = false;
         if (res.code == "0000") {
           this.data.push(res.data.examSchool);
           for(let i in res.data.scoreSetion){

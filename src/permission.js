@@ -42,7 +42,12 @@ router.beforeEach(async (to, from, next) => {
     if (to.path === '/login') {
       next()
     } else {
+      if(to.path === '/register' || to.path === '/resetPwd'){
+        next()
+        return
+      }
       next(`/login`)
+      
     }
   }
 })

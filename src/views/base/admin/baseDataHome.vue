@@ -15,7 +15,7 @@
               width="600"
               trigger="hover">
               <div class="nav-c">
-                <div class="nav-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.value)">
+                <div class="nav-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.url)">
                   <img :src="imgHolder" alt="">
                   <h4>{{item.name}}</h4>
                 </div>
@@ -33,15 +33,15 @@
     </div>
     <div class="section-con">
       <div class="section-left">
-          <Menu :theme="theme2"  accordion   :active-name='permissionList[0].child[0].value'>
+          <Menu :theme="theme2"  accordion   :active-name='permissionList[0].child[0].url'>
             <template v-for="item in permissionList[0].child" >
-              <MenuItem  :name="item.value" :key="'item.id' + item.value" :to="item.value">
-                <span class="layout-text" :key="'item.id' + item.value">{{ item.name }}</span>
+              <MenuItem  :name="item.url" :key="'item.id' + item.url" :to="item.url">
+                <span class="layout-text" :key="'item.id' + item.url">{{ item.name }}</span>
               </MenuItem>
             </template>
             <!-- <MenuItem  :name="value" :to="value">
-                <span class="layout-text" >注册</span>
-              </MenuItem> -->
+              <span class="layout-text" >注册</span>
+            </MenuItem> -->
           </Menu>
           
           <!-- <Menu :theme="theme2" :open-names="['1']" accordion @on-select="testToPage" >
@@ -113,7 +113,7 @@ export default {
   created(){
     // console.log(this.userInfo)
     this.imgHolder = this.userInfo.pic;
-    this.$router.push(this.permissionList[0].child[0].value);
+    this.$router.push(this.permissionList[0].child[0].url);
   },
   mounted(){
   },

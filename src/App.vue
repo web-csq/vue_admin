@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <router-view />
+
   </div>
 </template>
 
@@ -49,5 +50,17 @@ input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button{
     -webkit-appearance: none !important;
     margin: 0; 
+}
+/**::after
+  自动补充设置透明背景
+ */
+
+input:-internal-autofill-previewed,
+input:-internal-autofill-selected {
+    -webkit-text-fill-color: #FFFFFF !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+}
+.fr{
+  float: right;
 }
 </style>

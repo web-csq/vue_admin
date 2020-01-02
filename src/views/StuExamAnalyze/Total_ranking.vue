@@ -3,8 +3,15 @@
     <div class="">
 
     </div>
-    <div class="chart-c">
+    <div class="chart-c" style="max-width:1280px">
       <div id="d1"></div>
+    </div>
+    <div class="tab-container">
+      <div class="tab-title">
+        总分与名次报表
+        <Button class="fr" type="primary" size="small" @click="exportData">导出数据</Button>
+      </div>
+      <Table border :columns="columns" :loading="btnLoading" :data="tableData" ref="table1"></Table>
     </div>
   </div>
 </template>
@@ -12,47 +19,39 @@
 <script>
 import { totalScoreAndRanking } from "@/api/stuAnalyze"
 import { mapState } from "vuex"
-const data=[
-    {
-    "Class": "高一一班",
-    "Grade": "C",
-    "Score": 72.5
-    },
-    {
-    "Class": "高一二班",
-    "Grade": "C",
-    "Score": 77.5
-    },
-    {
-    "Class": "高一一班",
-    "Grade": "B",
-    "Score": 87.5
-    },
-    {
-    "Class": "高一二班",
-    "Grade": "A",
-    "Score": 91
-    },
-    {
-    "Class": "高一三班",
-    "Grade": "A",
-    "Score": 91.5
-    },
-    {
-    "Class": "高一二班",
-    "Grade": "A",
-    "Score": 90.5
-    },
-    {
-    "Class": "高一一班",
-    "Grade": "A",
-    "Score": 90.5
-    }
-]
 export default {
   data(){
     return{
-
+      btnLoading:true,
+      columns:[
+        {
+          title: '班级',
+          key: 'className',
+          align:'center'
+        },
+        {
+          title: '姓名',
+          key: 'userName',
+          align:'center'
+        },
+        {
+          title: '考试总分',
+          key: 'score',
+          align:'center'
+        },
+        {
+          title: '班级名次',
+          key: 'classRank',
+          align:'center'
+        },
+        {
+          title: '年级名次',
+          key: 'gradeRank',
+          align:'center'
+        },
+        
+      ],
+      tableData:[]
     }
   },
   computed:{
@@ -62,6 +61,12 @@ export default {
     })
   },
   methods:{
+     exportData(){
+      let name;
+      this.$refs.table1.exportCsv({
+          filename: this.examInfo.name +'-总分与名次'
+      });
+    },
     initChart(data){
        const chart = new this.$G2.Chart({
         container: 'd1',
@@ -75,7 +80,7 @@ export default {
         }
       });
       chart.legend({
-        reversed: true // 图例项逆序显示
+        reversed: false // 图例项逆序显示
       });
       chart.axis('Score', {
         grid: null
@@ -115,6 +120,7 @@ export default {
       schoolId:this.examInfo.schoolId
     }).then(res=>{
       let list=[]
+      this.tableData=res.data;
       for(let item of res.data){
         let obj={}
         obj.Class=item.className
@@ -123,6 +129,7 @@ export default {
         list.push(obj)
       }
       this.initChart(list)
+      this.btnLoading=false
     })
   },
   mounted(){

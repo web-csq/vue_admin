@@ -31,6 +31,11 @@ const commonRoutes = [
         component: () => import('../components/Register.vue')
     },
     {
+        path: '/resetPwd',
+        name: 'resetPwd',
+        component: () => import('../components/ResetPwd.vue')
+    },
+    {
       path: '/moduleshow',
       name: 'moduleshow',
       component: () => import('@/views/ModuleShow.vue')

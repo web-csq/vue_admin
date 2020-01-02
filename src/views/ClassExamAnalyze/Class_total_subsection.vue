@@ -16,8 +16,8 @@
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-     <div class="tab-title">总分年级分段报表</div>
-     <Table border :columns="columns" :data="tableData"></Table>
+      <div class="tab-title">班级总分分段报表</div>
+      <Table border :columns="columns" :data="tableData"></Table>
     </div>
     <!-- <h5 style="margin:20px 0 0 0;">
       诊断分析：<span style="color:#f10215">峰度大，成绩相比不稳定</span>
@@ -38,14 +38,10 @@ export default {
       section:20,
       btnLoading:false,
       type:1,
-        model: '',
-        columns: [],
-        chartData:[],
-       tableData: [
-          {
-            
-          }
-        ]
+      model: '',
+      columns: [],
+      chartData:[],
+      tableData: []
     }
   },
   methods:{
@@ -61,7 +57,9 @@ export default {
           let list=[];
           _this.columns=[{
                 title: '分段',
-                key: 'subsc'
+                key: 'subsc',
+                align:'center',
+                minWidth: 80,
             }]
           _this.tableData=[];
           let obj2={subsc:"数量"}
@@ -71,6 +69,8 @@ export default {
             obj["数量"]=item.count;
             obj1.title=item.name;
             obj1["key"]=item.name
+            obj1.align = 'center'
+            obj1.minWidth = 90
             obj2[item.name]=item.count
             list.push(obj)
             _this.columns.push(obj1)
@@ -87,7 +87,7 @@ export default {
       const chart = new this.$G2.Chart({
         container: 'd1',
         forceFit: true,
-        height: 400
+        height: 500
       });
       chart.source(data);
       chart.tooltip({
@@ -105,22 +105,21 @@ export default {
           }
         }
       });
-
-      if(type==1){
-        chart.interval().position('year*数量');
-        chart.render();
-
-        chart.source(data);
-      }else{
-       
+        chart
+        .line()
+        .position('year*数量')
+        .color("#d9d9d9")
+        .shape('smooth');
         chart.interval().position('year*数量');
         chart.changeData(data);
+        chart.source(data);
+     
+        
          _this.$nextTick(()=>{
            if(document.getElementById("d1").children.length>1){
              document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
            }
         })
-      }
       _this.btnLoading=false;
         
       

@@ -108,9 +108,9 @@ export default {
                 userName: [
                     { required: true, message: '用户名不能为空', trigger: 'blur' }
                 ],
-                phones:[{
-                    required: true, message: '手机号不能为空', trigger: 'blur'
-                }],
+                // phones:[{
+                //     required: true, message: '手机号不能为空', trigger: 'blur'
+                // }],
                 
             },
         }
@@ -128,16 +128,26 @@ export default {
         handleSubmit(){//提交修改
             let updataUser = {};
             updataUser.id = this.userInfo.id;
-            if(this.formValidate.email != ''){
+            if(this.formValidate.phones.length != 0){
+                if(this.formValidate.phones.length == 11){
+                    updataUser.phone = this.formValidate.phones;
+                }else{
+                    this.$Message.warning('手机号格式不正确')
+                    return false
+                }
+            }
+            if(this.formValidate.idCard.length != 0){
+                if(this.formValidate.idCard.length == 18){
+                    updataUser.identityCardNumber = this.formValidate.idCard;
+                }else{
+                    this.$Message.warning('身份证号格式不正确')
+                    return false
+                }
+            }
+            if(this.formValidate.email.length != 0){
                 updataUser.email = this.formValidate.email; 
             }
-            console.log(this.formValidate.idCard);
-            if(this.formValidate.idCard != ''){
-                updataUser.identityCardNumber = this.formValidate.idCard;
-                
-            }
             this.btnLoading = true;
-            updataUser.phone = this.formValidate.phones;
             updataUser.sex = this.formValidate.sex;
             updataUser.truename = this.formValidate.trueName;
             updataUser.username = this.formValidate.userName;

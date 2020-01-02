@@ -1,9 +1,17 @@
 <template>
   <div>
-    选择班级：<Select  v-model="selClassId" style="width:200px" @on-change="selClassFn">
+    <div class="loading" v-if='loadShow'>
+      <Spin class="img">
+        <Icon type="load-c" size=38 class="demo-spin-icon-load"></Icon>
+        <div>数据正在拼命加载中...</div>
+      </Spin>
+    </div>
+    <div v-if="selLoading">
+      选择班级：<Select  v-model="selClassId" style="width:200px" @on-change="selClassFn">
         <Option :value="0" >全部</Option>
         <Option :value="item.id" v-for="item in classList" :key="item.id">{{item.name}}</Option>
     </Select>
+    </div>
     <div class="chart-c divbox" v-if="isShow">
       <div id="d1"></div>
     </div>
@@ -64,16 +72,13 @@ export default {
   name: "c_class_by_subject_good_stu",
   data() {
     return {
+      loadShow:true,
+      selLoading:false,
       absoluteList:[],//绝对
       columns: [
             {
-                title: '排名',
-                key: 'gradeRank',
-                align:'center'
-            },
-            {
-                title: '总分',
-                key: 'score',
+                title: '班级',
+                key: 'className',
                 align:'center'
             },
             {
@@ -82,8 +87,13 @@ export default {
                 align:'center'
             },
             {
-                title: '班级',
-                key: 'className',
+                title: '总分',
+                key: 'score',
+                align:'center'
+            },
+            {
+                title: '排名',
+                key: 'gradeRank',
                 align:'center'
             },
       ],
@@ -165,6 +175,8 @@ export default {
       }
       obja.examId = this.examInfo.id;
       selectGradeListClassLevleTwo(obja).then( res => {
+        this.selLoading = true;
+        this.loadShow = false;
         if( res.code == "0000"){
           this.loading = false
           if(res.data != null){//绝对

@@ -10,6 +10,7 @@
       <div class="ranking-box" v-for="(item,index) in rankingData" :key="index">
         <div class="box-top">
             <h4>姓名：<span style="color:#409EFF">{{item.userName}}</span> </h4>
+            <h4>班级：<span>{{item.className}} </span> </h4>
             <h6>排名：{{item.ranking}}</h6>
         </div>
         <div class="tab-c">
@@ -19,10 +20,11 @@
     </div>
     
     <div class="tab-container" v-if="!loading">
-      <div class="tab-title">总分排名</div>
-      <Table border :columns="columns" :data="tableData">
-       
-      </Table>
+      <div class="tab-title">
+        总分排名
+        <Button class="fr" type="primary" size="small" @click="exportData">导出数据</Button>
+      </div>
+      <Table border ref="table1" :columns="columns" :data="tableData"></Table>
     </div>
 
   </div>
@@ -44,8 +46,16 @@ export default {
     }
   },
   methods:{
+    exportData(){
+      let name;
+      for(let item in this.classList){
+        if(this.classList[item].id===this.model) name=this.classList[item].name
+      }
+      this.$refs.table1.exportCsv({
+          filename: name+"-"+this.examInfo.name +'成绩总计'
+      });
+    },
     genarateCharts(id,data){
-      
       const dv = new this.$DataSet.DataView().source(data);
       dv.transform({
         type: 'fold',
@@ -57,11 +67,11 @@ export default {
         container: id,
         forceFit: true,
         height: 300,
-        padding: [ 10, 10, 10, 10 ]
+        padding: [ 10, 20, 10, 20 ]
       });
       chart.source(dv, {
         score: {
-          min: -150,
+          min: 0,
           max: 150
         }
       });
@@ -125,24 +135,34 @@ export default {
         this.tableData=[];
         _this.columns=[{
                 title: '姓名',
-                key: 'name'
+                key: 'name',
+                align:'center'
             },
             {
-              title: '名次',
-              key: 'ranking'
+              title: '班级排名',
+              key: 'ranking',
+              align:'center'
+            },
+            {
+              title: '年级排名',
+              key: 'gradeRanking',
+              align:'center'
             },
             {
                 title: '总分',
-                key: 'total'
+                key: 'total',
+                align:'center'
             }];
         for(let i=0;i<res.data.length;i++){
           let obj={},obj1={}
           obj.userName=res.data[i].userName;
-          obj.ranking="第"+(i+1)+"名";
+          obj.className=res.data[i].className;
+          obj.ranking="第"+(res.data[i].classRank)+"名";
           obj.dataList=[];
           obj1.name=obj.userName
           obj1.total=res.data[i].score
-          obj1.ranking=i+1
+          obj1.ranking=res.data[i].classRank
+          obj1.gradeRanking=res.data[i].gradeRank
           
           for(let item of res.data[i].studentAnswerSheetList){
             let dataObj={}
@@ -159,9 +179,9 @@ export default {
           let obj={}
           obj.title=item.subjectName.substring(2)
           obj.key=item.subjectName.substring(2)
+          obj.align = 'center'
           _this.columns.push(obj)
         }
-        console.log( _this.columns)
         _this.rankingData=list.slice(0,10)
         _this.loading=false
       }
@@ -209,8 +229,8 @@ export default {
   // display: flex;
   border: 1px solid #ddd;
   padding: 10px;
-  width: 250px;
-  margin:10px 50px 0 0 ;
+  width: 480px;
+  margin:10px 30px 0 0 ;
   border-radius: 8px;
 }
 </style>

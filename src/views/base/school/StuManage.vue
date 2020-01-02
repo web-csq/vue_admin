@@ -27,19 +27,13 @@
                 :action="baseURL+'/user/useExcelToImportStudents'">
                 <Button icon="ios-cloud-upload-outline" type="primary" :loading='updataLoading'>批量导入学生</Button>
             </Upload>
-            <!-- <Button
-                class=" right-10"
-                icon="ios-cloud-download"
-                type="primary"
-                @click="downloadFile('档案模板')"
-            >下载模板</Button> -->
             <Button
                 icon="ios-cloud-download"
                 type="primary"
             >
             <a style="color:#fff;"  href="https://soiiu-exam.oss-cn-beijing.aliyuncs.com/download/%E9%AB%98%E4%B8%AD%E5%AD%A6%E7%94%9F%E4%BF%A1%E6%81%AF%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF%EF%BC%88spss%EF%BC%89.xlsx">下载学生模板</a>    
             </Button>
-            <!-- <Button style="margin-left:10px;" @click="addStu">新增学生</Button> -->
+            <!-- <Button style="margin-left:10px;" @click="test">新增学生</Button> -->
         </div>
         
         <Table
@@ -118,6 +112,36 @@
             </div>
         </Modal>
 
+        <!-- 导入数据提示框 -->
+        <Modal
+        v-model="uploadModle"
+        title="导入学生表格信息"
+        @on-ok="uploadOk"
+        >
+            <div>
+                <Collapse v-model="value1">
+                    <Panel name="1">
+                        <!--  -->
+                        导入成功信息 -- 共 {{ successCounts }}条
+                        <List slot="content"   border size="small" v-if="successCounts > 0">
+                            <ListItem  v-for="item in successList" :key="item.id">{{item.id}}:&nbsp;{{ item.value }}</ListItem>
+                        </List>
+                        <List slot="content"   :border='false' size="small" v-if="successCounts == 0">
+                            <ListItem > 数据成功导入0条</ListItem>
+                        </List>
+                    </Panel>
+                    <Panel name="2">
+                        导入失败信息 -- 共 {{ errorCounts }} 条
+                        <List slot="content"   border size="small" v-if="errorList.length > 0">
+                            <ListItem v-for="item in errorList" :key="item.id">{{item.id}}:&nbsp;{{ item.value }}</ListItem>
+                        </List>
+                        <List slot="content"   :border="false" size="small" v-if="errorCounts == 0">
+                            <ListItem  > 数据导入失败0条</ListItem>
+                        </List>
+                    </Panel>
+                </Collapse>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -130,7 +154,9 @@ export default {
     name:"stuManage",
     data(){
         return {
+            value1:'1',//折叠面板
             baseURL:'',
+            uploadModle:false,//导入学生提示信息
             addStuModal:false,
             updataModal:false,//修改学生模态框
             loading:true,
@@ -240,9 +266,16 @@ export default {
             getGradeList:[],
             model4:'',//班级
             getClassList:[],
+            successCounts:0,
+            errorCounts:0,
+            successList:[],
+            errorList:[],
         }
     },
     methods:{
+        uploadOk(){//导入数据成功与失败
+            this.uploadModle = false;
+        },
         selGradeID(){
             // 年级
             this.page.pageNum = 1;
@@ -330,30 +363,35 @@ export default {
         },
         handleSuccess(res,file){//上传成功，如果上传成功 clearFiles，清空文件
             this.updataLoading = false
+            this.errorList = [];
+            this.successList = [];
             if(res.code === "0000"){
                 let successCount = 0;
                 let errorCount = 0;
+                this.uploadModle = true;
                 if(JSON.stringify(res.data.successData) != "{}"){
                     for(let i in res.data.successData){
-                        successCount ++
+                        let succesObj = {};
+                        successCount ++;
+                        succesObj.id = i;
+                        succesObj.value = res.data.successData[i];
+                        this.successList.push(succesObj);
                     }
                 }
+                
                 if(JSON.stringify(res.data.errorData) != "{}"){
                     for(let i in res.data.errorData){
+                        let errObj = {};
                         errorCount ++
+                        errObj.id = i;
+                        errObj.value = res.data.errorData[i];
+                        this.errorList.push(errObj);
                     }
                 }
-                if(successCount == 0 && errorCount != 0){
-                    this.$Notice.warning({
-                        title: `数据导入失败${errorCount}条`,
-                    });
-                }
-                if(successCount != 0 && errorCount == 0){
-                    this.$Notice.success({
-                        title: `数据成功导入${successCount}条`,
-                    });
-                    this.getListUserByRoleIdAndPage();
-                }
+                
+                this.successCounts = successCount;
+                this.errorCounts = errorCount;
+                
             }else{
                 this.$Message.error("数据导入失败！")
             }
@@ -362,41 +400,6 @@ export default {
         },
         handleError(error,file){//上传失败
             this.$Message.error("数据导入失败！")
-        },
-        downloadFile(name) {
-            let requestConfig = {
-                headers: {
-                "Content-Type": "application/json;application/octet-stream"
-                }
-            };
-            AjaxHelper.post(this.downLoadUrl, requestConfig, {
-                responseType: "blob"
-            }).then(res => {
-                // 处理返回的文件流
-                const content = res.data;
-                const blob = new Blob([content]);
-                var date =
-                new Date().getFullYear() +
-                "" +
-                (new Date().getMonth() + 1) +
-                "" +
-                new Date().getDate();
-                const fileName = date + name + ".xlsx";
-                if ("download" in document.createElement("a")) {
-                // 非IE下载
-                const elink = document.createElement("a");
-                elink.download = fileName;
-                elink.style.display = "none";
-                elink.href = URL.createObjectURL(blob);
-                document.body.appendChild(elink);
-                elink.click();
-                URL.revokeObjectURL(elink.href); // 释放URL 对象
-                document.body.removeChild(elink);
-                } else {
-                // IE10+下载
-                navigator.msSaveBlob(blob, fileName);
-                }
-            });
         },
         async getListUserByRoleIdAndPage(){//根据用户分析
             this.schoolArr = [];

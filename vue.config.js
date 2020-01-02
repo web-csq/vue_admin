@@ -6,9 +6,6 @@ const IS_PROD = ['production',"test"].includes(process.env.NODE_ENV)
 const filenameHashing = true;
 const productionSourceMap = !IS_PROD;
 const assetsDir = '';
-function resolve (dir) {
-  return path.join(__dirname, dir)
-}
 function getAssetPath (assetsDir, filePath) {
   return assetsDir
     ? path.posix.join(assetsDir, filePath)
@@ -46,17 +43,34 @@ module.exports = {
     },
     chainWebpack:config =>{
         // 指定环境打包js路径
-      if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test') {
+      if (IS_PROD) {
         const isLegacyBundle = process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD
         const filename = getAssetPath(
           assetsDir,
           `js/[name]${isLegacyBundle ? `-legacy` : ``}${filenameHashing ? '.[contenthash:8]' : ''}.js`
         )
         config.mode('production').devtool(productionSourceMap ? 'source-map' : false).output.filename(filename).chunkFilename(filename)
+
+        config.optimization.splitChunks({
+          chunks: 'all',
+          maxInitialRequests: Infinity,
+          minSize: 1000, // 依赖包超过300000bit将被单独打包
+          automaticNameDelimiter:'-',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name(module) {
+                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+                return `chunk.${packageName.replace('@', '')}`;
+              },
+              priority:10
+            }
+          }
+        })
       }
     },
     configureWebpack:config=>{
-      if(IS_PROD){
+      if(process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test'){
         config.externals={
           "vue":"Vue",
           "vuex":"Vuex",
@@ -64,9 +78,13 @@ module.exports = {
           "axios":"axios",
           "element-ui":"ELEMENT",
           "iview":"iview",
-          "G2":"G2",
           "DataSet":"DataSet",
-          "screenfull":"screenfull"
+          "screenfull":"screenfull",
+          "qs":"Qs",
+          "particlesJs":"particlesJS",
+          "jscookie":"Cookies",
+          "G2":"G2_3",
+          "_":"_"
         }
         config.plugins.push(
             new CompressionPlugin({
@@ -76,7 +94,6 @@ module.exports = {
                 algorithm: 'gzip',
             })
         )
-        
       }
     }
 }

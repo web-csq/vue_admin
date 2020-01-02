@@ -25,13 +25,8 @@ export default {
       loading:true,
       columns: [
             {
-                title: '排名',
-                key: 'gradeRank',
-                align:'center'
-            },
-            {
-                title: '总分',
-                key: 'score',
+                title: '班级',
+                key: 'className',
                 align:'center'
             },
             {
@@ -40,8 +35,13 @@ export default {
                 align:'center'
             },
             {
-                title: '班级',
-                key: 'className',
+                title: '总分',
+                key: 'score',
+                align:'center'
+            },
+            {
+                title: '排名',
+                key: 'gradeRank',
                 align:'center'
             },
         ],
@@ -85,21 +85,25 @@ export default {
         // console.log( res );
         this.loading = false;
         if (res.code == "0000") {
-          for(let item of res.data){
-            let obj = {};
-            obj.country = item.className
-            obj['人数'] = item.list.length 
-            this.chartList.push(obj);
-            for(let itemList of item.list){
-              let tabObj = {};
-              tabObj.className = item.className
-              tabObj.userName = itemList.userName
-              tabObj.gradeRank = itemList.gradeRank
-              tabObj.score = itemList.score
-              this.data.push(tabObj);
+          if(res.data != null){
+            if(res.data.length != 0){
+              for(let item of res.data){
+                let obj = {};
+                obj.country = item.className
+                obj['人数'] = item.list.length 
+                this.chartList.push(obj);
+                for(let itemList of item.list){
+                  let tabObj = {};
+                  tabObj.className = item.className
+                  tabObj.userName = itemList.userName
+                  tabObj.gradeRank = itemList.gradeRank
+                  tabObj.score = itemList.score
+                  this.data.push(tabObj);
+                }
+              }
+              this.setLineChart(this.chartList);
             }
           }
-          this.setLineChart(this.chartList);
         }
       })
     }

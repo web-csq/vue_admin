@@ -56,7 +56,7 @@
             </Col>
             <Col span="5">
               <div class="divCenter">
-                <strong>{{schoolInfo.standardDeviation}}</strong>
+                <strong>{{schoolInfo.variance}}</strong>
                 <p>方差</p>
               </div>
             </Col>
@@ -94,7 +94,7 @@
                     </Col>
                     <Col span="5">
                       <div class="divCenter">
-                        <strong class="strong">{{item.standardDeviation != null? item.standardDeviation : 0}}</strong>
+                        <strong class="strong">{{item.variance != null? item.variance : 0}}</strong>
                         <p class="p">方差</p>
                       </div>
                     </Col>
@@ -123,7 +123,7 @@ export default {
           medianScore:0,
           maxScore:0,
           minScore:0,
-          standardDeviation:0,
+          variance:0,
         },
         subjectList:[],
         idx:0,
@@ -149,7 +149,7 @@ export default {
               medianScore: res.data.examSchool.medianScore,//中位数
               maxScore: res.data.examSchool.maxScore,//最高分
               minScore: res.data.examSchool.minScore,//最高分
-              standardDeviation: res.data.examSchool.minScore
+              variance: res.data.examSchool.variance
             }
             this.subjectList = res.data.examSchoolSubjectList;
           }

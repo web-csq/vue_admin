@@ -1,84 +1,69 @@
 <template>
-    <div >
-        <div class="top-c">
-            <div class="cent top">
-                <div class="cent top-l">
-                    <img src="@/assets/imgs/logo.png" alt="" @click="$router.push('/login')">
-                    <h3 @click="$router.push('/login')">
-                    慧海科技
-                    </h3>
-                    
-                </div>
-            </div>
-        </div>
+    <div class="login-vue">
         <!-- 注册 -->
-        忘记密码 
-        <div class="contnets">
+        <div class="contnets container">
+            <p class="title">找回密码</p>
             <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="100">
-                <FormItem label="姓名" prop="name">
-                    <Input v-model="formValidate.name" placeholder="请输入姓名" />
+                <FormItem label="用户名" prop="username">
+                    <Input style="width:150px;" v-model="formValidate.username " placeholder="请输入用户名" />
                 </FormItem>
-                <FormItem label="E-mail邮箱" prop="mail">
-                    <Input v-model="formValidate.mail" placeholder="请输入邮箱" />
+                <FormItem label="令牌" prop="token">
+                    <Input style="width:150px;margin-right:5px;" v-model="formValidate.token " placeholder="点击发送获取令牌码" />
+                    <Button type="primary" size='small' @click="sendReq" :loading='loading'>获取令牌</Button><br>
+                    <span style="color:red;">（从邮箱中获取令牌码）</span>
                 </FormItem>
-                <FormItem label="手机号" prop="tel">
-                    <Input v-model="formValidate.tel" placeholder="请输入手机号"  />
-                </FormItem>
-                <FormItem label="Desc" prop="desc">
-                    <Input v-model="formValidate.desc" type="textarea" :autosize="{minRows: 5,maxRows: 10}" placeholder="Enter something..." />
+                
+                <FormItem label="新密码" prop="password">
+                    <Input style="width:150px;" v-model="formValidate.password"  placeholder="请输入新密码" type="password" />
                 </FormItem>
                 <FormItem>
-                    <Button type="primary" @click="handleSubmit('formValidate')">提交</Button>
-                    <Button @click="handleReset('formValidate')" style="margin-left: 8px">重置</Button>
+                    <Button type="primary" @click="handleSubmit('formValidate')" :loading='submitLoading'>提交</Button>
+                    <Button @click="goBack" style="margin-left: 8px">返回登录页</Button>
                 </FormItem>
             </Form>
         </div>
         
+        <particles></particles>
         <web-footer></web-footer>
     </div>
 </template>
 <script>
 import { retrievePassword,sendRetrievePasswordEmail } from "@/api/user"
 import WebFooter from "./WebFooter/index"
+import Particles from '@/components/Particles/index'
 
 export default {
-    name:'register',
+    name:'resetPwd',
     data(){
         return{
+            loading:false,
+            submitLoading:false,
             formValidate: {
-                name: '',
-                mail: '',
-                tel:'',
-                desc: ''
+                username : '',
+                password:'',
+                token:''
             },
             ruleValidate: {
-                name: [
-                    { required: true, message: '姓名不能为空', trigger: 'blur' }
+                username: [
+                    { required: true, message: '用户姓名不能为空', trigger: 'blur' }
                 ],
-                mail: [
-                    { required: true, message: '邮箱不能为空', trigger: 'blur' },
-                    { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
+                password: [
+                    { required: true, message: '密码不能为空', trigger: 'blur' },
                 ],
-                tel: [
-                    { required: true, message: '手机号不能为空', trigger: 'blur' },
-                ],
-                desc: [
-                    { required: true, message: '请输入申请理由', trigger: 'blur' },
-                    { type: 'string', max: 200, message: '不能超过200字', trigger: 'blur' }
-                ]
+                token:[{required: true, message: '令牌码不能为空', trigger: 'blur'}]
             }
         }
     },
     methods:{
         handleSubmit (name) {
             this.$refs[name].validate((valid) => {
-                if(this.formValidate.tel.length != 11){
-                    this.$Message.warning('手机号格式不正确');
+                if(this.formValidate.password.length < 6){
+                    this.$Message.warning('密码不能小于6位');
                     return
                 }
                 if (valid) {
-                    console.log(valid);
-                    console.log(this.formValidate);
+                    this.submitLoading = true
+                    console.log( this.formValidate)
                     this.setretrievePassword(this.formValidate);
                 } else {
                     this.$Message.error('基本数据不能为空');
@@ -88,12 +73,26 @@ export default {
         handleReset (name) {
             this.$refs[name].resetFields();
         },
+        sendReq(){
+            
+            if(this.formValidate.username == ''){
+                this.$Message.warning('用户名不能为空');
+                return false
+            }
+            this.loading = true;
+            this.getEmail();
+        },
+        goBack(){//返回登录页
+            this.$router.push('login');
+        },
         async setretrievePassword(obj){//提交
             retrievePassword(obj).then( res => {
+                this.submitLoading = false
                 if(res.code == "0000"){
-                    this.$Message.success(res.message)     
-                }else{
-                    this.$Message.error(res.message);
+                    this.$Message.success(res.message+',1s后将跳转到登录页');
+                    setTimeout( ()=> {
+                        this.$router.push('login');
+                    },1000)    
                 }
             })
         },
@@ -101,10 +100,9 @@ export default {
             sendRetrievePasswordEmail({
                 username :this.formValidate.username
             }).then( res => {
+                this.loading = false
                 if(res.code == "0000"){
-                    this.$Message.success(res.message)     
-                }else{
-                    this.$Message.error(res.message);
+                    this.$Message.success(res.message+'前往邮箱中获取令牌码')     
                 }
             })
         }
@@ -113,7 +111,8 @@ export default {
 
     },
     components:{
-        WebFooter
+        WebFooter,
+        Particles
     }
 }
 </script>
@@ -121,6 +120,10 @@ export default {
     .contnets{
         width: 500px;
         margin: 100px auto 0;
+    }
+    .title{
+        font-size: 16px;
+        margin-bottom: 20px;
     }
 </style>
 <style lang="scss">
@@ -193,7 +196,7 @@ export default {
     align-items: center;
     width: 33.33%;
     padding: 10px;
-    text-align: center;
+    /*text-align: center;*/
     cursor: pointer;
     img{
         width: 60px;
@@ -216,5 +219,28 @@ export default {
     }
     .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
     height: 0px;
+    }
+    .login-vue {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+    }
+    .login-vue .container {
+        background: rgba(255, 255, 255, .2);
+        width: 400px!important;
+        text-align: center;
+        border-radius: 10px;
+        padding: 30px;
+        margin-top:0rem;
+        position: relative;
+        z-index: 2;
+    }
+    .ivu-form-item-content{
+        text-align: left;
+    }
+    .ivu-form .ivu-form-item-label{
+        color: #fff;
     }
 </style>

@@ -27,8 +27,9 @@ export default {
     name: 'login',
     data() {
         return {
-            account: 'soiiu',
-            pwd: '123456',
+            type:"text",
+            account: '',
+            pwd: '',
             accountError: '',
             pwdError: '',
             isShowLoading: false,
@@ -67,10 +68,9 @@ export default {
         },
         register() {//注册
             this.$router.push('register');
-            console.log(111);
         },
         forgetPwd() {
-            
+            this.$router.push('resetPwd');
         },
         async submit() {
         this.isShowLoading = true;

@@ -14,7 +14,16 @@
 <script>
 import { selectGradeListClassAvgScoreOrHighLowScore } from "@/api/schoolAnalyze"
 import { mapState } from "vuex"
-
+const data = [
+  { x: 'Oceania', low: 1, q1: 9, median: 16, q3: 22, high: 24 },
+  { x: 'East Europe', low: 1, q1: 5, median: 8, q3: 12, high: 16 },
+  { x: 'Australia', low: 1, q1: 8, median: 12, q3: 19, high: 26 },
+  { x: 'South America', low: 2, q1: 8, median: 12, q3: 21, high: 28 },
+  { x: 'North Africa', low: 1, q1: 8, median: 14, q3: 18, high: 24 },
+  { x: 'North America', low: 3, q1: 10, median: 17, q3: 28, high: 30 },
+  { x: 'West Europe', low: 1, q1: 7, median: 10, q3: 17, high: 22 },
+  { x: 'West Africa', low: 1, q1: 6, median: 8, q3: 13, high: 16 }
+];
 export default {
   name:"s_class_height_low",
   data(){
@@ -51,7 +60,7 @@ export default {
         dv.transform({
           type: 'map',
           callback: obj => {
-            obj.range = [ obj.low,obj.high ];
+            obj.range = [obj.low, obj.q1, obj.median, obj.q3, obj.high ];
             return obj;
           }
         });
@@ -110,6 +119,9 @@ export default {
                       obj.x = res.data[i].className;
                       obj.low = res.data[i].minScore;
                       obj.high = res.data[i].maxScore;
+                      obj.median = res.data[i].medianScore;//中位数
+                      obj.q3 = (res.data[i].maxScore+res.data[i].medianScore)/2;//上四分位
+                      obj.q1 = (res.data[i].minScore+res.data[i].medianScore)/2;//下四分位
                       this.chartList.push(obj);
                     }
                     this.data = res.data
@@ -125,6 +137,7 @@ export default {
   },
   updated(){
     this.setChart(this.chartList);
+    // this.setChart();
   }
 }
 </script>

@@ -8,8 +8,6 @@ import iview from 'iview'
 import G2 from '@antv/g2';
 import DataSet from '@antv/data-set';
 
-// import 'element-ui/lib/theme-chalk/index.css';
-// import 'iview/dist/styles/iview.css'
 
 Vue.use(iview)
 import './permission'
@@ -30,6 +28,7 @@ import {
   Radio,
   RadioGroup,
   Option,
+  Tree,
   Input,
   OptionGroup,
   Button,
@@ -38,6 +37,7 @@ import {
   TableColumn,
   Popover,
   Form,
+  Switch,
   FormItem,
   Icon,
   Message
@@ -66,6 +66,8 @@ Vue.use(Pagination)
 .use(Radio)
 .use(RadioGroup)
 .use(RadioButton)
+.use(Tree)
+.use(Switch)
 
 Vue.prototype.$message = Message;
 

@@ -1,5 +1,15 @@
 <template>
   <div>
+    <div>
+      选择学科：
+      <RadioGroup v-model="subject" type="button" @on-change="getJson">
+        <Radio
+          v-for="item in classList"
+          :label="item.subjectId"
+          :key="item.subjectId"
+        >{{item.subjectName}}</Radio>
+      </RadioGroup>
+    </div>
     <div class="chart-c" style="max-width:1280px">
       <div id="d1"></div>
     </div>
@@ -9,6 +19,7 @@
 <script>
 import { listExamClassSubject } from "@/api/subjectAnalyze"
 import { mapState } from "vuex"
+let _this
 const data = [
   { x: 'Oceania', low: 1, q1: 9, median: 16, q3: 22, high: 24 },
   { x: 'East Europe', low: 1, q1: 5, median: 8, q3: 12, high: 16 },
@@ -23,7 +34,8 @@ export default {
   name:"subject_class_comparison",
   data(){
     return{
-      classList:[]
+      classList:[],
+      subject:""
     }
   },
   computed:{
@@ -61,7 +73,9 @@ export default {
           + '<span style="background-color:{color};" class="g2-tooltip-marker"></span>'
           + '{name}<br/>'
           + '<span style="padding-left: 16px">最高分：{high}</span><br/>'
+          + '<span style="padding-left: 16px">上四分位数：{q3}</span><br/>'
           + '<span style="padding-left: 16px">平均分：{median}</span><br/>'
+          + '<span style="padding-left: 16px">下四分位数：{q1}</span><br/>'
           + '<span style="padding-left: 16px">最低分：{low}</span><br/>'
           + '</li>'
       });
@@ -83,23 +97,24 @@ export default {
           fillOpacity: 0.3
         });
       chart.render();
-    }
-  },
-  mounted(){
-    
-  },
-  created(){
-    listExamClassSubject({
+      _this.$nextTick(()=>{
+         if(document.getElementById("d1").children.length>1){
+           document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
+         }
+      })
+    },
+    getJson(){
+      listExamClassSubject({
       examId :this.examInfo.id,
       gradeId :this.examInfo.gradeId,
-      schoolId:this.examInfo.schoolId
+      schoolId:this.examInfo.schoolId,
+      subjectId:this.subject
     }).then(res=>{
       if(res.code==="0000"){
         let list=[],classList=[]
-
         for(let item of res.data){
           let obj={};
-          obj.x=item.className+item.subjectName
+          obj.x=item.className
           obj.q1=(item.medianScore+item.minScore)*0.5
           obj.low=item.minScore
           obj.q3=(item.medianScore+item.maxScore)*0.5
@@ -112,6 +127,16 @@ export default {
 
       }
     })
+    }
+  },
+  mounted(){
+    
+  },
+  created(){
+    this.classList = this.examInfo.subjectList;
+    this.subject=this.examInfo.subjectList[0].subjectId
+    _this=this
+    this.getJson()
   }
 }
 </script>

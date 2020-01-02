@@ -14,7 +14,7 @@
       全选：<el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
       <Button style="margin:0 0 0 20px" size="small" type="primary" :loading="btnLoading" @click="comfirm">确定</Button>
     </div>
-    <div class="chart-c">
+    <div class="chart-c" style="max-width:1280px;margin:20px 0 0 0">
       <div id="d1"></div>
     </div>
   </div>
@@ -24,48 +24,6 @@
 import { subjectCombinationAnalysis } from "@/api/stuAnalyze" 
 import { mapState } from "vuex"
 let _this;
-// const data=[
-//     {
-//     "Class": "高一一班",
-//     "Grade": "男",
-//     "Score": 10
-//     },
-//     {
-//     "Class": "高一二班",
-//     "Grade": "男",
-//     "Score": 23
-//     },
-//     {
-//     "Class": "高一一班",
-//     "Grade": "男",
-//     "Score": 2
-//     },
-//     {
-//     "Class": "高一二班",
-//     "Grade": "男",
-//     "Score": 5
-//     },
-//     {
-//     "Class": "高一三班",
-//     "Grade": "女",
-//     "Score": 8
-//     },
-//     {
-//     "Class": "高一二班",
-//     "Grade": "女",
-//     "Score": 6
-//     },
-//     {
-//     "Class": "高一一班",
-//     "Grade": "女",
-//     "Score": 7
-//     },
-//     {
-//     "Class": "高一一班",
-//     "Grade": "男",
-//     "Score": 10
-//     }
-// ]
 export default {
   data(){
     return{
@@ -139,7 +97,7 @@ export default {
       const chart = new this.$G2.Chart({
         container: "d1",
         forceFit: true,
-        height: 400
+        height: 500
       });
       chart.clear();
       chart.source(data,{
@@ -203,6 +161,13 @@ export default {
     for(let item in this.classList){
       this.list.push(this.classList[item])
     }
+    this.subject=[this.list[0].subjectId]
+    if(this.list.length>1){
+      this.checkAll=false
+    }else{
+      this.checkAll=true
+    }
+    this.comfirm()
   }
 }
 </script>

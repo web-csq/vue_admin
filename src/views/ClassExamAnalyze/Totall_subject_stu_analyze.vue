@@ -1,55 +1,63 @@
 <template>
     <div>
-        <!-- 全体学科学生分析---雷达图 -->
-        选择班级：  <Select v-model="selClassId" style="width:200px" @on-change="selClassFn" :label-in-value='true'>
-                        <Option :value="item.id" v-for="item in classList" :key="item.id">{{item.name}}</Option>
-                    </Select>
-        <div class="divBox" v-if='isShow'>
-            <div class="tit">全体学生学科分析</div>
-            <div class="chart-c">
-                <div id="d1"></div>
-            </div>
+        <div class="loading" v-if='loadShow'>
+            <Spin class="img">
+                <Icon type="load-c" size=38 class="demo-spin-icon-load"></Icon>
+                <div>数据正在拼命加载中...</div>
+            </Spin>
         </div>
-        <Row>
-            <Col span="12">
-                <div>
-                    <div class="tits">班级优秀学生学科分析</div>
-                    <div class="chart-c" v-if="isShow2">
-                        <div id="d2"></div>
-                    </div>
-                    <p v-if="warning2" class="p">(班级暂无优秀学生学科分析!!)</p>
+        <div v-if='contLoading'>
+            <!-- 全体学科学生分析---雷达图 -->
+            选择班级：  <Select v-model="selClassId" style="width:200px" @on-change="selClassFn" :label-in-value='true'>
+                            <Option :value="item.id" v-for="item in classList" :key="item.id">{{item.name}}</Option>
+                        </Select>
+            <div class="divBox" v-if='isShow'>
+                <div class="tit">全体学生学科分析</div>
+                <div class="chart-c">
+                    <div id="d1"></div>
                 </div>
-            </Col>
-            <Col span="12">
-                <div>
-                    <div class="tits">班级良好学生学科分析</div>
-                    <div class="chart-c" v-if='isShow3'>
-                        <div id="d3"></div>
+            </div>
+            <Row>
+                <Col span="12">
+                    <div>
+                        <div class="tits">班级优秀学生学科分析</div>
+                        <div class="chart-c" v-if="isShow2">
+                            <div id="d2"></div>
+                        </div>
+                        <p v-if="warning2" class="p">(班级暂无优秀学生学科分析!!)</p>
                     </div>
-                    <p v-if="warning3" class="p">(班级暂无良好学生学科分析!!)</p>
-                </div>
-            </Col>
-        </Row>
-        <Row>
-            <Col span="12">
-                <div>
-                    <div class="tits">班级及格学生学科分析</div>
-                    <div class="chart-c" v-if='isShow4'>
-                        <div id="d4"></div>
+                </Col>
+                <Col span="12">
+                    <div>
+                        <div class="tits">班级良好学生学科分析</div>
+                        <div class="chart-c" v-if='isShow3'>
+                            <div id="d3"></div>
+                        </div>
+                        <p v-if="warning3" class="p">(班级暂无良好学生学科分析!!)</p>
                     </div>
-                    <p v-if="warning4" class="p">(班级暂无及格学生学科分析!!)</p>
-                </div>
-            </Col>
-            <Col span="12">
-                <div>
-                    <div class="tits">班级学困学生学科分析</div>
-                    <div class="chart-c" v-if='isShow5'>
-                        <div id="d5"></div>
+                </Col>
+            </Row>
+            <Row>
+                <Col span="12">
+                    <div>
+                        <div class="tits">班级及格学生学科分析</div>
+                        <div class="chart-c" v-if='isShow4'>
+                            <div id="d4"></div>
+                        </div>
+                        <p v-if="warning4" class="p">(班级暂无及格学生学科分析!!)</p>
                     </div>
-                    <p v-if="warning5" class="p">(班级暂无学困学生学科分析!!)</p>
-                </div>
-            </Col>
-        </Row>        
+                </Col>
+                <Col span="12">
+                    <div>
+                        <div class="tits">班级学困学生学科分析</div>
+                        <div class="chart-c" v-if='isShow5'>
+                            <div id="d5"></div>
+                        </div>
+                        <p v-if="warning5" class="p">(班级暂无学困学生学科分析!!)</p>
+                    </div>
+                </Col>
+            </Row>        
+        </div>
     </div>
 </template>
 <script>
@@ -60,6 +68,8 @@ export default {
     name:'c_totall_subject_stu_analyze',
     data(){
         return{
+            loadShow:true,
+            contLoading: false,
             selClassId:0,
             classList:[],//班级列表
             type:0,
@@ -84,6 +94,8 @@ export default {
         selClassFn(data){//选择班级
             this.selClassId = data.value;
             this.dataYName = data.label;
+            this.loadShow = true;
+            this.contLoading = false;
             this.warning2 = false;
             this.warning3 = false;
             this.warning4 = false;
@@ -170,6 +182,8 @@ export default {
                 examId :this.examInfo.id,
                 classId :this.selClassId
             }).then( res => {
+                this.loadShow = false;
+                this.contLoading = true;
                 // console.log(res);
                 if( res.code == "0000"){
                     if(res.data.examClassSubject.length > 0){
@@ -228,6 +242,9 @@ export default {
                             this.warning2 = true;
                             this.isShow2 = false
                         }
+                    }else{
+                        this.warning2 = true;
+                        this.isShow2 = false
                     }
                     // 良好
                     if(res.data.levelTwoGradeAvg.length > 0){
@@ -268,6 +285,9 @@ export default {
                             this.warning3 = true;
                             this.isShow3 = false
                         }
+                    }else{
+                        this.warning3 = true;
+                        this.isShow3 = false
                     }
                     // 及格
                     if(res.data.levelThreeGradeAvg.length > 0){
@@ -306,6 +326,9 @@ export default {
                             this.warning4 = true;
                             this.isShow4 = false
                         }
+                    }else{
+                        this.warning4 = true;
+                        this.isShow4 = false
                     }  
                     // 学困
                     if(res.data.levelSixGradeAvg.length > 0){
@@ -344,6 +367,9 @@ export default {
                             this.warning5 = true;
                             this.isShow5 = false
                         }
+                    }else{
+                        this.warning5 = true;
+                        this.isShow5 = false
                     }    
                 } 
             })

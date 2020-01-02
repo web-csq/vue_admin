@@ -1,19 +1,8 @@
 <template>
-    <div >
-        <div class="top-c">
-            <div class="cent top">
-                <div class="cent top-l">
-                    <img src="@/assets/imgs/logo.png" alt="" @click="$router.push('/login')">
-                    <h3 @click="$router.push('/login')">
-                    慧海科技
-                    </h3>
-                    
-                </div>
-            </div>
-        </div>
+    <div class="login-vue">
         <!-- 注册 -->
-        注册 
-        <div class="contnets">
+        <div class="contnets container">
+            <p class="title">注册</p>
             <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="100">
                 <FormItem label="姓名" prop="name">
                     <Input v-model="formValidate.name" placeholder="请输入姓名" />
@@ -24,27 +13,30 @@
                 <FormItem label="手机号" prop="tel">
                     <Input v-model="formValidate.tel" placeholder="请输入手机号"  />
                 </FormItem>
-                <FormItem label="Desc" prop="desc">
-                    <Input v-model="formValidate.desc" type="textarea" :autosize="{minRows: 5,maxRows: 10}" placeholder="Enter something..." />
+                <FormItem label="备注" prop="desc">
+                    <Input v-model="formValidate.desc" type="textarea" :autosize="{minRows: 5,maxRows: 10}" placeholder="请输入备注..." />
                 </FormItem>
                 <FormItem>
-                    <Button type="primary" @click="handleSubmit('formValidate')">提交</Button>
-                    <Button @click="handleReset('formValidate')" style="margin-left: 8px">重置</Button>
+                    <Button type="primary" @click="handleSubmit('formValidate')" :loading="loading">提交</Button>
+                    <Button @click="handleReset('formValidate')" style="margin-left: 8px">返回登录页</Button>
                 </FormItem>
             </Form>
         </div>
         
+        <particles></particles>
         <web-footer></web-footer>
     </div>
 </template>
 <script>
 import { contactUs } from "@/api/user"
 import WebFooter from "./WebFooter/index"
+import Particles from '@/components/Particles/index'
 
 export default {
     name:'register',
     data(){
         return{
+            loading:false,
             formValidate: {
                 name: '',
                 mail: '',
@@ -77,8 +69,8 @@ export default {
                     return
                 }
                 if (valid) {
-                    console.log(valid);
-                    console.log(this.formValidate);
+                    // console.log(this.formValidate);
+                    this.loading = true
                     this.reginerInfo(this.formValidate);
                 } else {
                     this.$Message.error('基本数据不能为空');
@@ -87,9 +79,11 @@ export default {
         },
         handleReset (name) {
             this.$refs[name].resetFields();
+            this.$router.push('login');
         },
         async reginerInfo(obj){//注册
             contactUs(obj).then( res => {
+                this.loading = false;
                 if(res.code == "0000"){
                     this.$Message.success(res.message)     
                 }else{
@@ -102,7 +96,8 @@ export default {
 
     },
     components:{
-        WebFooter
+        WebFooter,
+        Particles
     }
 }
 </script>
@@ -111,6 +106,11 @@ export default {
         width: 500px;
         margin: 100px auto 0;
     }
+    .title{
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+    
 </style>
 <style lang="scss">
     $main_blue:#409EFF;
@@ -205,5 +205,25 @@ export default {
     }
     .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
     height: 0px;
+    }
+    .login-vue {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+    }
+    .login-vue .container {
+        background: rgba(255, 255, 255, .2);
+        width: 450px;
+        text-align: center;
+        border-radius: 10px;
+        padding: 30px;
+        margin-top:0rem;
+        position: relative;
+        z-index: 2;
+    }
+    .ivu-form .ivu-form-item-label{
+        color: #fff!important;
     }
 </style>

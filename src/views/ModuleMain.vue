@@ -15,7 +15,7 @@
               width="600"
               trigger="hover">
               <div class="nav-c">
-                <div class="nav-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.value)">
+                <div class="nav-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.url)">
                   <img :src="item.icon" alt="">
                   <h4>{{item.name}}</h4>
                 </div>

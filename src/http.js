@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Message } from "iview"
 import { resetTokenAndClearUser } from "@/utils/router"
-import { Spin } from 'iview';
+import { Loading } from 'element-ui';
 let baseURL=process.env.VUE_APP_URL;
 
 /**
@@ -10,22 +10,25 @@ let baseURL=process.env.VUE_APP_URL;
 const http = axios.create({
   baseURL,
   withCredentials:true,
-  timeout: 6000
+  timeout: 100000000
 })
 /**
  * axios 拦截器
  */
 // request interceptor
+let LoadingInstance
 http.interceptors.request.use(
   config => {
 
-  if(config.url.indexOf("/login")==-1){
-    // Spin.show();
+  if(config.url.indexOf("/login")==-1 || config.url.indexOf("/contactUs")==-1 || config.url.indexOf("/retrievePassword")==-1 || config.url.indexOf("/sendRetrievePasswordEmail")==-1){
+      
+  }else{
+    LoadingInstance= Loading.service({
+      target:"main-content",
+      lock:true
+    });
   }
    
-  
-    
-    
     config.headers["x-requested-with"]="XMLHttpRequest"
     return config
   },
@@ -42,11 +45,12 @@ http.interceptors.response.use(
   response => {
    
     setTimeout(()=>{
-      Spin.hide();
+      LoadingInstance.close();
     },500)
     
     if(response.data.code==="8888"){
       resetTokenAndClearUser()
+      window.history.go(0)
     }
     
     if(response.data.code!=="0000"){

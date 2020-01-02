@@ -8,15 +8,13 @@
     </div>
     
     <div class="chart-c">
-      <div id="d1"></div>
+      <div id="d1" v-if="chartShow"></div>
     </div>
     <!-- <h5 style="margin:20px 0 0 0;">
       诊断分析：<span style="color:#f10215">峰度大，成绩相比不稳定</span>
     </h5> -->
-    <div>
+    <div style="max-width:80%" class="radio-group" v-if="chartShow">
       学生列表：
-    </div>
-    <div style="max-width:80%" class="radio-group">
       <el-radio-group v-model="stu" size="small" @change="select">
         <el-radio v-for="(item,index) in stuList" :key="index" :label="item.id" border>{{item.truename}}</el-radio>
       </el-radio-group>
@@ -33,6 +31,7 @@ export default {
   name:"",
   data(){
     return{
+      chartShow:false,
       model:"",
       stuList:[],
       stu:0,
@@ -57,6 +56,8 @@ export default {
         examId:this.examInfo.id,
         userId:_this.stu
       }).then(res=>{
+        if(res.data.length!==0){
+        this.chartShow=true
         let list=[]
         for(let items of res.data){
           let obj={}
@@ -67,10 +68,17 @@ export default {
           list.push(obj)
         }
         console.log(list)
-        _this.initChart(list)
+        _this.$nextTick(()=>{
+           _this.initChart(list)
+        })
+       
         _this.type++
-        
+        }else{
+          this.chartShow=false
+          _this.$message.warning("暂无数据！")
+        }
       })
+
     },
     getStus(){
       listUserByRoleIdAndPage({
@@ -159,14 +167,8 @@ export default {
           fillOpacity: 1
         });
       chart.render();
-
-      if(this.type!==1){
-       
-         _this.$nextTick(()=>{
-           if(document.getElementById("d1").children.length>1){
-             document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
-           }
-        })
+      if(document.getElementById("d1").children.length>1){
+       document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
       }
     }
   },

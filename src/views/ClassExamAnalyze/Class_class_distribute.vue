@@ -4,8 +4,8 @@
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-     <div class="tab-title">班级总分分布报表</div>
-      <Table border :columns="columns" :data="tableData"></Table>
+      <div class="tab-title">年级班级总分分布报表</div>
+        <Table border :columns="columns" :data="tableData"></Table>
       </div>
   </div>
 </template>
@@ -36,7 +36,7 @@ export default {
         const chart = new this.$G2.Chart({
         container: 'd1',
         forceFit: true,
-        height: 400
+        height: 500
       });
       chart.source(data);
       chart.scale('score', {
@@ -71,7 +71,8 @@ export default {
     }).then(res=>{
       _this.columns=[{
         title:"年级",
-        key:"class"
+        key:"class",
+        align:'center',
       }]
       _this.tableData=[]
       for(let item of res.data){
@@ -112,36 +113,42 @@ export default {
           let obj={}
           obj.title="最高分"
           obj.key=item
+          obj.align='center'
           _this.columns.push(obj)
         }
         if(item==="minScore"){
           let obj={}
           obj.title="最低分"
           obj.key=item
-           _this.columns.push(obj)
+          obj.align='center'
+          _this.columns.push(obj)
         }
         if(item==="avgScore"){
           let obj={}
           obj.title="平均分"
           obj.key=item
-           _this.columns.push(obj)
+          obj.align='center'
+          _this.columns.push(obj)
         }
         if(item==="medianScore"){
           let obj={}
           obj.title="中位数"
           obj.key=item
+          obj.align='center'
           _this.columns.push(obj)
         }
         if(item==="variance"){
           let obj={}
           obj.title="方差"
           obj.key=item
+          obj.align='center'
           _this.columns.push(obj)
         }
         if(item==="standardDeviation"){
           let obj={}
           obj.title="标准差"
           obj.key=item
+          obj.align='center'
           _this.columns.push(obj)
         }
         

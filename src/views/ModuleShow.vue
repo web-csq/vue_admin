@@ -8,7 +8,7 @@
           </span>
         </div>
         <div class="body-c">
-          <div class="body-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.value)">
+          <div class="body-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.url)">
             <img :src="item.icon" >
             <h4>
               {{item.name}}

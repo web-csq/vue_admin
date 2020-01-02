@@ -5,7 +5,7 @@
     </div>
     <div class="tab-container">
       <div class="tab-title">总分准良好学生班级报表</div>
-      <Table border :columns="columns" :data="dataList" ></Table>
+      <Table border :columns="columns" :data="dataList" :loading="loading"></Table>
     </div>
   </div>
 </template>
@@ -60,15 +60,11 @@ export default {
   data() {
     return {
       absoluteList:[],//绝对
+      loading:true,
       columns: [
             {
-                title: '排名',
-                key: 'gradeRank',
-                align:'center'
-            },
-            {
-                title: '总分',
-                key: 'score',
+                title: '班级',
+                key: 'className',
                 align:'center'
             },
             {
@@ -77,8 +73,13 @@ export default {
                 align:'center'
             },
             {
-                title: '班级',
-                key: 'className',
+                title: '总分',
+                key: 'score',
+                align:'center'
+            },
+            {
+                title: '排名',
+                key: 'gradeRank',
                 align:'center'
             },
         ],
@@ -129,7 +130,7 @@ export default {
         .adjust('jitter')
         .shape('circle')
         .opacity(0.65)
-        .size(4);
+        .size(3);
         chart.legend(false);
       chart.render();
     },
@@ -139,6 +140,7 @@ export default {
       selectGradeListClassLevleFour({
         examId: this.examInfo.id,//97
       }).then( res => {
+        this.loading = false
         if(res.code == "0000"){//相对
           // console.log(res);
           if(res.data != null){//绝对

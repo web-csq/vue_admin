@@ -22,7 +22,7 @@
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-     <div class="tab-title">学科成绩分段报表</div>
+     <div class="tab-title">班级学科报表</div>
      <Table border :columns="columns" :data="tableData"></Table>
     </div>
   </div>
@@ -87,6 +87,7 @@ export default {
             list.push(obj)
             obj1.title=item.name;
             obj1.key=item.name
+            obj1.align='center'
             _this.columns.push(obj1)
             tabObj[item.name]=item.count
           }

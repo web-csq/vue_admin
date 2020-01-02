@@ -4,7 +4,7 @@
          <div>
            <Button type="primary" size="small" @click="modalShow=true">添加考试</Button>
          </div>
-          <div>
+          <!-- <div>
             按名称查找：
             <Input icon="ios-search"
                 autocomplete="on" 
@@ -17,7 +17,7 @@
                 @on-enter="nameClick"
                 @on-click="nameClick"
                 />
-          </div>
+          </div> -->
         </div>
         <div class="tab-container" style="margin-left:20px"> 
           <Table 

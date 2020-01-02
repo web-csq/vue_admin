@@ -1,6 +1,6 @@
 <template>
   <div>
-       <div class="top" style="padding:0 20px 0 20px">
+       <!-- <div class="top" style="padding:0 20px 0 20px"> -->
          <!-- <div>
             区域选择：<Cascader 
                         class="cascader" 
@@ -13,7 +13,7 @@
                         @on-change="city_change"
                         ></Cascader>
           </div>-->
-          <div>
+          <!-- <div>
             按名称查找：<Input suffix="ios-search"
                               autocomplete="on" 
                               type="text" 
@@ -25,8 +25,8 @@
                               @on-enter="nameEnter"
                               @on-click="nameClick"
                               />
-          </div>
-        </div>
+          </div> -->
+        <!-- </div> -->
         <div class="tab-container" style="margin-left:20px"> 
           <Table 
             width="auto" 
@@ -37,9 +37,9 @@
             size="small" 
             :loading="tableLoading"
             ref="table">
-            <template slot-scope="{ row, index }" slot="action">
+            <template slot-scope="{ row }" slot="action">
                 <Button type="primary" size="small" style="margin-right: 5px" @click="goAnalyze(row)">查看报表</Button>
-                <Button type="error" size="small" @click="remove(index)">设置</Button>
+                <!-- <Button type="error" size="small" @click="remove(index)">设置</Button> -->
                 
             </template>
             </Table>

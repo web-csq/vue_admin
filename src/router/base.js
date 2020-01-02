@@ -78,5 +78,15 @@ export const baseAdminRoutes=[
         path:"/register",
         name:"register",
         component:()=>import("@/views/base/Register.vue")
+    },
+    {//角色
+      path:"/role",
+      name:"role",
+      component:()=>import("@/views/base/RoleManger.vue")
+    },
+    {//资源
+      path:"/resouce",
+      name:"resouce",
+      component:()=>import("@/views/base/ResourceManger.vue")
     }
 ]
