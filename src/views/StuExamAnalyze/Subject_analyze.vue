@@ -8,6 +8,9 @@
     </div>
     
     <div class="chart-c">
+      <div class="downImg">
+        <span @click="downloadImg">保存图表图片</span>
+      </div>
       <div id="d1" v-if="chartShow"></div>
     </div>
     <!-- <h5 style="margin:20px 0 0 0;">
@@ -24,6 +27,7 @@
 
 <script>
 import { subjectAnalysis } from "@/api/stuAnalyze" 
+import { listEachSubjectScoreInfo } from "@/api/schoolAnalyze"
 import { listUserByRoleIdAndPage } from "@/api/user"
 import { mapState } from 'vuex';
 let _this
@@ -35,7 +39,8 @@ export default {
       model:"",
       stuList:[],
       stu:0,
-      type:1
+      type:1,
+      schoolScore:[],
     }
   },
   computed:{
@@ -47,10 +52,13 @@ export default {
   created(){
     _this=this
     _this.model=_this.classList[0].id
+    this.getListEachSubjectScoreInfo();
     this.getStus()
-    
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","学科分析")
+    },
     select(value){
       subjectAnalysis({
         examId:this.examInfo.id,
@@ -59,19 +67,25 @@ export default {
         if(res.data.length!==0){
         this.chartShow=true
         let list=[]
+        // console.log(this.schoolScore)
         for(let items of res.data){
-          let obj={}
-          console.log(items)
-          obj["subject"]=items.subjectName.substr(2)
-          obj["班级名次"]=items.classRank
-          obj["年级名次"]=items.gradeRank
-          list.push(obj)
+          // obj["年级名次"]=items.gradeRank
+          for( let s_item of this.schoolScore){
+            let obj={}
+            if( s_item.item ==  items.subjectName.substr(2)){
+              obj["subject"]=items.subjectName.substr(2)
+              obj["学生该科得数"]=items.score
+              obj["该科最高分"]=s_item['该科最高分']
+              obj["该科平均分"]=s_item['该科平均分']
+              obj["该科最低分"]=s_item['该科最低分']
+              list.push(obj)
+            }
+          }
         }
-        console.log(list)
+        // console.log(list)
         _this.$nextTick(()=>{
-           _this.initChart(list)
+          _this.initChart(list)
         })
-       
         _this.type++
         }else{
           this.chartShow=false
@@ -99,20 +113,11 @@ export default {
       })
     },
     initChart(data){
-        const { DataView } = this.$DataSet;
-      // const data = [
-      //   { subject: '语文', 班级名次: 70, 年级名次: 30 },
-      //   { subject: '数学', 班级名次: 60, 年级名次: 70 },
-      //   { subject: '物理', 班级名次: 50, 年级名次: 60 },
-      //   { subject: '英语', 班级名次: 20, 年级名次: 80 },
-      //   { subject: '化学', 班级名次: 40, 年级名次: 50 },
-      //   { subject: '生物', 班级名次: 60, 年级名次: 70 }
-
-      // ];
+      const { DataView } = this.$DataSet;
       const dv = new DataView().source(data);
       dv.transform({
         type: 'fold',
-        fields: [ '班级名次', '年级名次' ], // 展开字段集
+        fields: [ '该科最高分','学生该科得数','该科平均分','该科最低分' ], // 展开字段集 '年级名次' 
         key: 'user', // key字段
         value: 'score' // value字段
       });
@@ -123,10 +128,10 @@ export default {
         padding: [ 20, 20, 95, 20 ]
       });
       chart.source(dv, {
-        // score: {
-        //   min: 0,
-        //   max: 80
-        // }
+        score: {
+          min: 0,
+          max: 150
+        }
       });
       chart.coord('polar', {
         radius: 0.8
@@ -156,10 +161,16 @@ export default {
         marker: 'circle',
         offset: 30
       });
-      chart.line().position('subject*score').color('user')
-        .size(2);
-      chart.point().position('subject*score').color('user')
-        .shape('circle')
+      chart.line().position('subject*score').color('user',function(user){
+        if( user == "该科最低分"){
+          return 'red'
+        }
+      }).size(2);
+      chart.point().position('subject*score').color('user',function(user){
+        if( user == "该科最低分"){
+          return 'red'
+        }
+      }).shape('circle')
         .size(4)
         .style({
           stroke: '#fff',
@@ -168,8 +179,29 @@ export default {
         });
       chart.render();
       if(document.getElementById("d1").children.length>1){
-       document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
+        document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
       }
+    },
+    async getListEachSubjectScoreInfo(){//列出年级最高分
+      listEachSubjectScoreInfo({
+        examId :this.examInfo.id,
+        gradeId :this.examInfo.gradeId,
+        schoolId :this.examInfo.schoolId
+      }).then( res => {
+        this.schoolScore = [];
+        if(res.data != null && res.data.length != 0){
+          for(let item of res.data){
+            let s_obj = {};
+            s_obj.item = item.subjectName.substring(2);
+            s_obj['该科最高分'] = item.maxScore;
+            s_obj['该科平均分'] = item.avgScore;
+            s_obj['该科最低分'] = item.minScore;
+            this.schoolScore.push(s_obj);
+          }
+          // console.log(this.schoolScore)
+        }
+
+      })
     }
   },
   mounted(){

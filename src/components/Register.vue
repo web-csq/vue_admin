@@ -10,11 +10,11 @@
                 <FormItem label="E-mail邮箱" prop="mail">
                     <Input v-model="formValidate.mail" placeholder="请输入邮箱" />
                 </FormItem>
-                <FormItem label="手机号" prop="tel">
-                    <Input v-model="formValidate.tel" placeholder="请输入手机号"  />
+                <FormItem label="手机号" prop="phone">
+                    <Input v-model="formValidate.phone" placeholder="请输入手机号"  />
                 </FormItem>
-                <FormItem label="备注" prop="desc">
-                    <Input v-model="formValidate.desc" type="textarea" :autosize="{minRows: 5,maxRows: 10}" placeholder="请输入备注..." />
+                <FormItem label="备注" prop="content">
+                    <Input v-model="formValidate.content" type="textarea" :autosize="{minRows: 5,maxRows: 10}" placeholder="请输入备注..." />
                 </FormItem>
                 <FormItem>
                     <Button type="primary" @click="handleSubmit('formValidate')" :loading="loading">提交</Button>
@@ -40,8 +40,8 @@ export default {
             formValidate: {
                 name: '',
                 mail: '',
-                tel:'',
-                desc: ''
+                phone:'',
+                content: ''
             },
             ruleValidate: {
                 name: [
@@ -51,10 +51,10 @@ export default {
                     { required: true, message: '邮箱不能为空', trigger: 'blur' },
                     { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
                 ],
-                tel: [
+                phone: [
                     { required: true, message: '手机号不能为空', trigger: 'blur' },
                 ],
-                desc: [
+                content: [
                     { required: true, message: '请输入申请理由', trigger: 'blur' },
                     { type: 'string', max: 200, message: '不能超过200字', trigger: 'blur' }
                 ]
@@ -86,8 +86,6 @@ export default {
                 this.loading = false;
                 if(res.code == "0000"){
                     this.$Message.success(res.message)     
-                }else{
-                    this.$Message.error(res.message);
                 }
             })
         },

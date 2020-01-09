@@ -74,19 +74,19 @@ export const baseAdminRoutes=[
         name:"personal",
         component:()=>import("@/views/base/Personal.vue")
     },
-    {//注册
-        path:"/register",
-        name:"register",
-        component:()=>import("@/views/base/Register.vue")
-    },
     {//角色
-      path:"/role",
-      name:"role",
-      component:()=>import("@/views/base/RoleManger.vue")
+        path:"/role",
+        name:"role",
+        component:()=>import("@/views/base/RoleManger.vue")
     },
     {//资源
-      path:"/resouce",
-      name:"resouce",
-      component:()=>import("@/views/base/ResourceManger.vue")
-    }
+        path:"/resouce",
+        name:"resouce",
+        component:()=>import("@/views/base/ResourceManger.vue")
+    },
+    {//资源
+      path:"/norm_manger",
+      name:"norm_manger",
+      component:()=>import("@/views/base/NormManger.vue")
+  }
 ]

@@ -6,8 +6,8 @@
 
 <script>
 /* eslint-disable */
-import particlesJs from "particles.js";
 import particlesConfig from "./particles.json";
+import particlesJs from "particles.js";
 export default {
   data() {
     return {};
@@ -18,13 +18,12 @@ export default {
   methods: {
     init() {
       particlesJS("particles-js", particlesConfig);
-      document.body.style.overflow = "hidden";
     }
   }
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 #particles-js {
   background-color: #2d3a4b;
   position: fixed;

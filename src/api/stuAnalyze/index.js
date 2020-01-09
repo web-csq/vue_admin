@@ -21,6 +21,12 @@ export const subjectCombinationAnalysis=(data)=>
     data
   })
 
+export const totalScoreRankTrack=(data)=>
+  post({
+    url:"/studentAnalysisReport/totalScoreRankTrack",
+    data
+  })
+
 export const totalScoreAndRanking=(data)=>
   post({
     url:"/studentAnalysisReport/totalScoreAndRanking",

@@ -10,7 +10,10 @@
         >{{item.subjectName}}</Radio>
       </RadioGroup>
     </div>
-    <div class="chart-c" style="max-width:1280px">
+    <div class="chart-c">
+      <div class="downImg">
+        <span @click="downloadImg">保存图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
   </div>
@@ -44,6 +47,9 @@ export default {
     })
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","持续跟踪")
+    },
     initChart(data){
       const dv = new this.$DataSet.DataView().source(data);
       dv.transform({
@@ -74,7 +80,7 @@ export default {
           + '{name}<br/>'
           + '<span style="padding-left: 16px">最高分：{high}</span><br/>'
           + '<span style="padding-left: 16px">上四分位数：{q3}</span><br/>'
-          + '<span style="padding-left: 16px">平均分：{median}</span><br/>'
+          + '<span style="padding-left: 16px">中位数：{median}</span><br/>'
           + '<span style="padding-left: 16px">下四分位数：{q1}</span><br/>'
           + '<span style="padding-left: 16px">最低分：{low}</span><br/>'
           + '</li>'
@@ -119,7 +125,7 @@ export default {
           obj.low=item.minScore
           obj.q3=(item.medianScore+item.maxScore)*0.5
           obj.high=item.maxScore
-          obj.median=item.avgScore
+          obj.median=item.medianScore
           list.push(obj)
         }
         

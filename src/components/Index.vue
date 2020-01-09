@@ -230,7 +230,7 @@ export default {
     },
     computed: {
         ...mapState({
-          menuItems:state=>state.router.menuItems,
+          menuItems:state=>state.app.menuList,
           permissionList:state=>state.app.permissionList,
           examInfo:state=>state.app.analyzeExam,
         }),
@@ -242,10 +242,13 @@ export default {
         // 所以需要在这定义组件名称和标签栏标题的映射表 有多少个页面就有多少个映射条数
         nameToTitle() {
             const obj = {}
-            this.menuItems.forEach(e => {
-                this.processNameToTitle(obj, e)
-            })
+            try{
+              this.menuItems.forEach(e => {
+                  this.processNameToTitle(obj, e)
+              })
+            }catch(e){
 
+            }
             return obj
         },
     },
@@ -560,6 +563,10 @@ aside {
 .aside-big {
     min-width: 290px;
     overflow: hidden;
+    overflow-y:scroll; 
+}
+.aside-big::-webkit-scrollbar {/*隐藏滚轮*/
+  display: none;
 }
 /* 主体页面 */
 .sec-right {
@@ -757,8 +764,8 @@ a {
   text-align: center;
   cursor: pointer;
   img{
-    width: 60px;
-    height:30px;
+    width: 40px;
+    height:40px;
     margin: 0 10px 0 0;
   }
   h4{

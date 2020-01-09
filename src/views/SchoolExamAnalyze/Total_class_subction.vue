@@ -1,15 +1,20 @@
 <template>
   <div>
     <div class="top">
-      分数间隔：<InputNumber  :min="1" :step="10" v-model="sectionList"></InputNumber>
+      分数间隔：<Input type="number" size="small" style="width:60px;"  :min="1" :step="10" v-model="sectionList" @keydown.enter.native="selScore"/>
       <Button style="margin-left:10px;" size="small" type="primary" @click="selScore" :loading="loading">设置分段</Button>
     </div>
     <div class="chart-c">
+      <div style="text-align:right;">
+        <span @click="downloadImg">下载图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-      <div class="tab-title">总分年级分段报表</div>
-      <Table border :columns="columns" :data="data" :loading="loadingTab"></Table>
+      <div class="tab-title">总分班级分段统计对比
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table ref="table1" border :columns="columns" :data="data" :loading="loadingTab"></Table>
     </div>
   </div>
 </template>
@@ -25,7 +30,7 @@ export default {
   name:"total_class_subction",
   data(){
     return{
-      sectionList :50,
+      sectionList :150,
       loading:false,
       loadingTab:true,
       columns: [],
@@ -35,6 +40,14 @@ export default {
     }
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","总分班级分段统计对比")
+    },
+    exportData(){
+      this.$refs.table1.exportCsv({
+          filename: this.examInfo.name +'总分班级分段统计对比'
+      });
+    },
     selScore(){
       this.loading = true;
       this.type ++ ;

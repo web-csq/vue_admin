@@ -54,7 +54,7 @@ module.exports = {
         config.optimization.splitChunks({
           chunks: 'all',
           maxInitialRequests: Infinity,
-          minSize: 1000, // 依赖包超过300000bit将被单独打包
+          minSize: 1000, // 依赖包超过将被单独打包
           automaticNameDelimiter:'-',
           cacheGroups: {
             vendor: {
@@ -84,16 +84,9 @@ module.exports = {
           "particlesJs":"particlesJS",
           "jscookie":"Cookies",
           "G2":"G2_3",
-          "_":"_"
+          "_":"_",
+          "html2canvas":"html2canvas"
         }
-        config.plugins.push(
-            new CompressionPlugin({
-                test:/\.js$|\.html$|.\css/, //匹配文件名
-                threshold: 10240,//对超过10k的数据压缩
-                deleteOriginalAssets: false, //不删除源文件
-                algorithm: 'gzip',
-            })
-        )
       }
     }
 }

@@ -6,34 +6,19 @@
         <Radio v-for="item in subjectList" :label="item.subjectId" :key="item.subjectId">{{item.subjectName}}</Radio>
       </RadioGroup>
     </div>
-    <div class="chart-c" v-show="chartShow">
+    <div class="chart-c" v-if="chartShow">
+      <div class="downImg">
+        <span @click="downloadImg">保存图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
   </div>
 </template>
 
 <script>
-const data = [
-  { country: 'Europe', year: '1750', value: 163 },
-  { country: 'Europe', year: '1800', value: 203 },
-  { country: 'Europe', year: '1850', value: 276 },
-  { country: 'Europe', year: '1900', value: 408 },
-  { country: 'Europe', year: '1950', value: 547 },
-  { country: 'Europe', year: '1999', value: 729 },
-  { country: 'Europe', year: '2050', value: 628 },
-  { country: 'Europe', year: '2100', value: 828 },
-  { country: 'Asia', year: '1750', value: 502 },
-  { country: 'Asia', year: '1800', value: 635 },
-  { country: 'Asia', year: '1850', value: 809 },
-  { country: 'Asia', year: '1900', value: 947 },
-  { country: 'Asia', year: '1950', value: 1402 },
-  { country: 'Asia', year: '1999', value: 3634 },
-  { country: 'Asia', year: '2050', value: 5268 },
-  { country: 'Asia', year: '2100', value: 7268 }
-];
 import { listStudentAnswerSheetDetail } from "@/api/subjectAnalyze"
 import { mapState } from 'vuex'
-let _this
+let _this;
 export default {
   name:"subject_question_score_class",
   data(){
@@ -45,6 +30,9 @@ export default {
     }
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","年级班级总分分布")
+    },
     getJson(){
       listStudentAnswerSheetDetail({
       examId:this.examInfo.id,
@@ -56,7 +44,7 @@ export default {
           _this.chartShow=false
           return _this.$message.warning("该学科暂无数据")
         }
-        
+        _this.chartShow=true
         let list=[]
         for(let item of res.data){
           let obj={}
@@ -65,7 +53,10 @@ export default {
           obj.value=item.score
           list.push(obj)
         }
-        _this.initChart(list)
+        this.$nextTick(()=>{
+          _this.initChart(list)
+        })
+        
       })
     },
     initChart(data){

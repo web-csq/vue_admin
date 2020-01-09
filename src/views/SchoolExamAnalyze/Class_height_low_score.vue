@@ -1,11 +1,16 @@
 <template>
   <div>
     <div class="chart-c">
+      <div style="text-align:right;">
+        <span @click="downloadImg">下载图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-      <div class="tab-title">班级最高/低分报表</div>
-      <Table border :columns="columns" :data="data"></Table>
+      <div class="tab-title">班级最高/低分报表
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table border ref="table1" :columns="columns" :data="data"></Table>
     </div>
 
   </div>
@@ -55,6 +60,18 @@ export default {
     })
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","班级最高/低分报表")
+    },
+    exportData(){//导出全校排名数据
+        if(this.data.length != 0){
+          this.$refs.table1.exportCsv({
+              filename: this.examInfo.name +'班级最高/低分报表'
+          });
+        }else{
+          this.$Message.warning('表格暂无数据,数据不能导出')
+        }
+    },
       setChart(data){
         const dv = new this.$DataSet.DataView().source(data);
         dv.transform({
@@ -67,7 +84,7 @@ export default {
         const chart = new this.$G2.Chart({
           container: 'd1',
           forceFit: true,
-          height: 500
+          height: 500,
           // padding: [ 20, 120, 95 ]
         });
         chart.source(dv, {
@@ -83,8 +100,11 @@ export default {
           itemTpl: '<li data-index={index} style="margin-bottom:4px;">'
             + '<span style="background-color:{color};" class="g2-tooltip-marker"></span>'
             + '{name}<br/>'
-            + '<span style="padding-left: 16px">最大值：{high}</span><br/>'
-            + '<span style="padding-left: 16px">最小值：{low}</span><br/>'
+            + '<span style="padding-left: 16px">最高分：{high}</span><br/>'
+            + '<span style="padding-left: 16px">最低分：{low}</span><br/>'
+            + '<span style="padding-left: 16px">中位数：{median}</span><br/>'
+            + '<span style="padding-left: 16px">上四分数：{q3}</span><br/>'
+            + '<span style="padding-left: 16px">下四分数：{q1}</span><br/>'
             + '</li>'
         });
         chart.schema().position('x*range')

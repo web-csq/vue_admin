@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="main-c">
     <div class="top-c">
         <div class="cent top">
           <div class="cent top-l">
@@ -79,6 +79,10 @@ export default {
 
 <style lang="scss">
 $main_blue:#409EFF;
+.main-c{
+  overflow-y: scroll;
+  height: 100vh;
+}
 .top-c{
   border-bottom:1px solid #ccc;
 }
@@ -151,8 +155,8 @@ $main_blue:#409EFF;
   text-align: center;
   cursor: pointer;
   img{
-    width: 60px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     margin: 0 10px 0 0;
   }
   h4{

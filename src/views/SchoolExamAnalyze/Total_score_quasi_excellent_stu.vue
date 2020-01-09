@@ -1,11 +1,16 @@
 <template>
   <div>
     <div class="chart-c">
+      <div style="text-align:right" >
+        <span @click="downloadImg">下载图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-      <div class="tab-title">总分准优秀学生班级报表</div>
-      <Table border :columns="columns" :data="dataList" :loading="loading"></Table>
+      <div class="tab-title">总分准优秀学生班级报表
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table ref="table1" border :columns="columns" :data="dataList" :loading="loading"></Table>
     </div>
   </div>
 </template>
@@ -87,11 +92,19 @@ export default {
     }
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","总分准优秀学生班级报表")
+    },
+    exportData(){//导出全校排名数据
+        this.$refs.table1.exportCsv({
+          filename: this.examInfo.name +'总分准优秀学生班级报表'
+      });
+    },
     setChart(dom,data){
       const chart = new this.$G2.Chart({
         container: dom,
         forceFit: true,
-        height: 400
+        height: 500
       });
       chart.clear();
       chart.source(data,{

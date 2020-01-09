@@ -26,7 +26,7 @@ $main_blue:#409EFF;
 }
 .chart-c{
   margin-right: auto;
-  max-width: 1280px;
+  max-width: 1480px;
   min-width: 800px;
 }
 .tab-title{
@@ -34,4 +34,10 @@ $main_blue:#409EFF;
   text-align: center;
   color: $main_blue;
   letter-spacing: 2px;
+}
+.downImg{
+  text-align: right;
+  margin: 0 30px 0 0;
+  cursor: pointer;
+  text-decoration: underline;
 }

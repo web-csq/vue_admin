@@ -29,8 +29,8 @@
             size="small" 
             :loading="tableLoading"
             ref="table">
-            <template slot-scope="{ row, index }" slot="action">
-                <Button type="primary" size="small" style="margin-right: 5px" @click="lead(index)">详情</Button>
+            <template slot-scope="{ row}" slot="action">
+                <Button type="primary" size="small" style="margin-right: 5px" @click="lead(row)">详情</Button>
                 <Button type="error" size="small" @click="remove(row)">删除</Button>
                 
             </template>
@@ -111,7 +111,7 @@ export default {
           { required: true, message: '请选择考试类型', trigger: 'blur' }
         ],
         subjectList: [
-          { required: true, message: '请选择学科', trigger: 'blur' }
+          { required: true, message: '请选择学科', trigger: 'change' }
         ],
         schoolList: [
           { required: true, message: '请选择学校', trigger: 'blur' }
@@ -281,9 +281,8 @@ export default {
         city_change(value){
           console.log(value)
         },
-        lead(index){
-          console.log(_this.tableData[index])
-          window.sessionStorage.examId=_this.tableData[index].id
+        lead(row){
+          window.sessionStorage.exam=JSON.stringify(row)
           this.$router.push({
             path:"/testdetail"
           })

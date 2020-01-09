@@ -10,11 +10,23 @@
         <div id="d1"></div>
       </div>
     </div>
+    <div class="tab-container" >
+      <div class="tab-title">总分绝对进步学生
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table ref="table1" border :columns="columns" :data="tabData" :loading='loading'></Table>
+    </div>
     <div v-if="isShow">
       <div>相对名次分布</div>
       <div class="chart-c">
         <div id="d2"></div>
       </div>
+    </div>
+    <div class="tab-container" >
+      <div class="tab-title">总分相对进步学生
+        <Button class="fr" type="primary" size="small" @click="exportData2"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table border :columns="columns2" :data="tabData2" :loading='loading' ref="table2"></Table>
     </div>
   </div>
 </template>
@@ -75,13 +87,67 @@ export default {
       classList:[],//班级列表
       selClassId:0,//classID
       type:0,
-      isShow:false
+      isShow:false,
+      loading:true,
+      tabData:[],
+      columns:[
+        {
+          title: '班级',
+          key: 'className',
+          align:'center'
+        },
+        {
+          title: '学生',
+          key: 'userName',
+          align:'center'
+        },
+        {
+          title: "绝对进步名次",
+          key: 'gradeRank',
+          align:'center'
+        }
+      ],
+      columns2:[
+        {
+          title: '班级',
+          key: 'className',
+          align:'center'
+        },
+        {
+          title: '学生',
+          key: 'userName',
+          align:'center'
+        },
+        {
+          title: "相对进步名次",
+          key: 'gradeRank',
+          align:'center'
+        }
+      ],
+      tabData2:[],
     }
   },
   methods:{
+    exportData(){//导出全校排名数据
+        if(this.tabData.length != 0){
+          this.$refs.table1.exportCsv({
+              filename: this.examInfo.name +'总分绝对进步学生'
+          });
+        }else{
+          this.$Message.warning('表格暂无数据,数据不能导出')
+        }
+    },
+    exportData2(){//导出全校排名数据
+        if(this.tabData2.length != 0){
+          this.$refs.table2.exportCsv({
+              filename: this.examInfo.name +'总分相对进步学生'
+          });
+        }else{
+          this.$Message.warning('表格暂无数据,数据不能导出')
+        }
+    },
     selClassFn(){
       this.type++;
-      // console.log(this.selClassId)
       this.setSelectGradeListClassProgressOrRetrogress();
     },
     setChart(dom,data){
@@ -145,14 +211,17 @@ export default {
     async setSelectGradeListClassProgressOrRetrogress(){
       this.absoluteList = [];
       this.relativeList = [];
+      this.tabData = [];
+      this.tabData2 = [];
       selectGradeListClassProgressOrRetrogress({
         examId:this.examInfo.id,//97
         classId : this.selClassId,//calssID
         schoolId: this.examInfo.schoolId
       }).then( res => {
+        this.loading = false
           // console.log(res);
           if(res.code == "0000"){
-          if(res.data.absolute != null){//绝对
+          if(res.data.absolute != null && res.data.absolute.length != 0){//绝对
             this.isShow = true
             let absoluteData = res.data.absolute;
             for( let i in absoluteData){
@@ -161,8 +230,13 @@ export default {
                 let obj = {};
                 obj.Class = classnames;     
                 if(absoluteData[i].list[j].gradeRank < 0){
+                  let obj_d = {}
+                  obj_d.className = classnames;
+                  obj_d.userName = absoluteData[i].list[j].userName;
+                  obj_d.gradeRank = -absoluteData[i].list[j].gradeRank;
                   obj.Grade = absoluteData[i].list[j].userName       
                   obj.Score = -absoluteData[i].list[j].gradeRank
+                  this.tabData.push(obj_d);
                 }
                 this.absoluteList.push(obj);
               }
@@ -172,7 +246,7 @@ export default {
             })
             
           }
-          if(res.data.relative != null){
+          if(res.data.relative != null && res.data.relative.length != 0){
             this.isShow = true
             let relativeData = res.data.relative;
             for( let i in relativeData){
@@ -181,8 +255,13 @@ export default {
                   let obj = {};
                   obj.Class = classnames;
                   if(relativeData[i].list[j].gradeRank < 0){
+                    let obj_d = {}
+                    obj_d.className = classnames;
+                    obj_d.userName = relativeData[i].list[j].userName;
+                    obj_d.gradeRank = -relativeData[i].list[j].gradeRank;
                     obj.Grade = relativeData[i].list[j].userName
                     obj.Score = -relativeData[i].list[j].gradeRank
+                    this.tabData2.push(obj_d);
                   }
                   this.relativeList.push(obj);
               }

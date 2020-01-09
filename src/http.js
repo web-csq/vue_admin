@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Message } from "iview"
+import { Message } from "element-ui"
 import { resetTokenAndClearUser } from "@/utils/router"
 import { Loading } from 'element-ui';
 let baseURL=process.env.VUE_APP_URL;
@@ -20,7 +20,7 @@ let LoadingInstance
 http.interceptors.request.use(
   config => {
 
-  if(config.url.indexOf("/login")==-1 || config.url.indexOf("/contactUs")==-1 || config.url.indexOf("/retrievePassword")==-1 || config.url.indexOf("/sendRetrievePasswordEmail")==-1){
+  if(config.url.indexOf("/login")>-1 || config.url.indexOf("/contactUs")>-1 || config.url.indexOf("/retrievePassword")>-1 || config.url.indexOf("/sendRetrievePasswordEmail")>-1){
       
   }else{
     LoadingInstance= Loading.service({
@@ -34,7 +34,6 @@ http.interceptors.request.use(
   },
   error => {
     // Do something with request error
-
     console.log(error) // for debug
     Promise.reject(error)
   }
@@ -45,7 +44,12 @@ http.interceptors.response.use(
   response => {
    
     setTimeout(()=>{
-      LoadingInstance.close();
+      try {
+        LoadingInstance.close();
+      } catch (error) {
+        
+      }
+      
     },500)
     
     if(response.data.code==="8888"){

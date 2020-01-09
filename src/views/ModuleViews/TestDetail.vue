@@ -38,12 +38,14 @@
       <Table border :columns="columns" :data="tableData">
         <template slot-scope="{ row, index }" slot="action">
           <Button type="primary" size="small" style="margin-right: 5px" @click="lead(index)">导入分数</Button>
-          <Button
-            type="error"
+          <!-- <Button
+            type="primary"
             size="small"
             style="margin-right: 5px"
             @click="setSubsection(row)"
-          >设置分段</Button>
+          >设置分段</Button> -->
+          <Button type="error" size="small" style="margin-right: 5px" @click="leadThird(row)">导入第三方数据</Button>
+
         </template>
       </Table>
     </div>
@@ -93,7 +95,7 @@
     </Modal>
     <div class="upload">
       <div style="float:right">
-        <Button type="error" size="small" style="margin-right: 5px" @click="setTotalsection()">设置分段</Button>
+        <!-- <Button type="error" size="small" style="margin-right: 5px" @click="setTotalsection()">设置分段</Button> -->
       </div>
       
       <div style="float:right">
@@ -111,15 +113,13 @@
           <Button type="primary" size="small" style="margin-right: 5px">导入总成绩</Button>
         </Upload>
       </div>
-      
-      
     </div>
 
     <!-- 设置学科分段弹窗 -->
     <el-dialog title="设置分段" :visible.sync="subjectVisible">
       <div class="disflex">
         <span>总分：</span>
-        <Input type="number" v-model.trim="subjectObj.score" :maxlength="3" clearable style="width:80px;margin:0" />
+        <Input type="number" v-if="type==='分数'" v-model.trim="subjectObj.score" :maxlength="3" clearable style="width:80px;margin:0" />
         <el-radio-group v-model="type" size="small">
           <el-radio-button label="名次" ></el-radio-button>
           <el-radio-button label="分数"></el-radio-button>
@@ -207,7 +207,7 @@
     <el-dialog title="设置分段" :visible.sync="dialogFormVisible">
       <div class="disflex">
         <span>总分：</span>
-        <Input type="number" v-model.trim="totalObj.score" :maxlength="3" clearable style="width:80px;margin:0" />
+        <Input type="number" v-if="type==='分数'" v-model.trim="totalObj.score" :maxlength="3" clearable style="width:80px;margin:0" />
         <el-radio-group v-model="type" size="small">
           <el-radio-button label="名次" ></el-radio-button>
           <el-radio-button label="分数"></el-radio-button>
@@ -290,6 +290,52 @@
         </div>
       </div>
     </el-dialog>
+    <!-- 上传弹窗 -->
+    <el-dialog
+      title="提示"
+      :visible.sync="uploadVisible"
+      width="30%">
+      <div class="dia-c">
+        <div v-for="(item,index) in uploadList" :key="index">
+          {{item}}
+        </div>
+      </div>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="confirm">取 消</el-button>
+        <el-button type="primary" @click="confirm">确 定</el-button>
+      </span>
+    </el-dialog>
+
+
+    <!-- 第三方弹窗 -->
+    <el-dialog
+      title="导入第三方数据"
+      :visible.sync="thirdVisible"
+      width="70%">
+      <div style="display:flex;align-items:center">
+        <Select v-model="third" style="width:200px" @change="thirdChange">
+          <Option v-for="item in thirdList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+        </Select>
+        <div style="margin:0 0 0 20px">
+          科目：{{currentRow.subjectName}}
+        </div>
+      </div>
+      
+      <div class="dia-c">
+        <Table style="margin:10px 0 0 0" :columns="thirdColumns" border :data="thirdExamList">
+           <!-- <template slot-scope="{ row,index }" slot="action">
+              <Button type="primary" size="small" style="margin-right: 5px" @click="confirmLead(row)">导入</Button>
+              <el-checkbox v-model="checked">备选项</el-checkbox> 
+           </template> -->
+        </Table>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="thirdVisible = false">取 消</el-button>
+        <el-button type="primary" @click="confirmLead">确 定</el-button>
+      </span>
+
+    </el-dialog>
   </div>
 </template>
 
@@ -303,14 +349,21 @@ import {
   updateExamTarget,
   listSchoolSubjectsTarget,
   insertExamSchoolSubjectTarget,
-  updateExamSchoolSubjectTarget
+  updateExamSchoolSubjectTarget,
+  listExamInMarkSystem
 } from "@/api/test";
+import { thirdPartImportByMarkProject } from "@/api/thirdPartImport"
+import { mapState } from 'vuex';
 let _this;
 export default {
   name: "testdetail",
   data() {
     return {
+      check:false,
       subjectVisible:false,
+      uploadVisible:false,
+      thirdVisible:false,
+      uploadList:[],
       type:"名次",
       totalStatus:0,
       sebsectionId:0,
@@ -337,6 +390,7 @@ export default {
       },
       listTarget:[],
       examId: "",
+      exam:{},
       baseURL: "",
       analyzeButton: false,
       tableLoading: true,
@@ -358,29 +412,148 @@ export default {
           title: "操作",
           slot: "action",
           align: "center",
-          key: "action"
+          key: "action",
         }
+        
       ],
       tableData: [],
       smallLoading:false,
+      currentRow:{},
+      thirdList:[
+        {
+          value:1,
+          label:"智慧批阅"
+        },
+        {
+          value:2,
+          label:"新芽课堂"
+        }
+      ],
+      third:1,
+      thirdColumns:[
+        {
+          title:"ID",
+          align:"center",
+          key:"id",
+          width:60
+        },
+        {
+          title:"学年",
+          align:"center",
+          key:"year"
+        },
+        {
+          title:"考试名称",
+          align:"center",
+          key:"name"
+        },
+        {
+          title:"操作",
+          align:"center",
+          slot:"action",
+          width:100,
+          key:"action",
+          render: (h, params) => {
+              let id = params.row.id;
+              let flag = false;
+              if (this.currentChoose === id) {
+                flag = true
+              } else {
+                flag = false
+              }
+              let self = this
+              return h('div', [
+                h('Radio', {
+                  props: {
+                    value: flag
+                  },
+                  on: {
+                    'on-change': () => {
+                      self.currentChoose = id;
+                    }
+                  }
+                })
+              ])
+          }
+        }
+      ],
+      thirdExamList:[],
+      currentChoose: '',
     };
   },
-  computed: {},
+  computed: {
+    ...mapState({
+      term:state=>state.user.term,
+      year:state=>state.user.year,
+      school:state=>state.user.school
+    })
+  },
   methods: {
+    thirdChange(){
+
+    },
+    confirmLead(){
+      this.third==1?(
+        thirdPartImportByMarkProject({
+          examId:this.exam.id,
+          examName:this.exam.name,
+          gradeId:this.exam.gradeId,
+          gradeName:this.exam.gradeName,
+          schoolId:this.exam.schoolId,
+          schoolName:this.exam.schoolName,
+          subjectId:this.currentRow.subjectId,
+          subjectName:this.currentRow.subjectName,
+          thirdPartExamId:this.currentChoose,
+          thirdPartName:"智慧批阅",
+        }).then(res=>{
+          if(res.code==="0000"){
+            setTimeout(()=>{
+              this.$message.success(res.message)
+              this.$router.go(0)
+            },300)
+          }
+        })
+      ):(
+        console.log(null)
+      )
+      
+    },
+    leadThird(row){
+      this.currentRow=row
+      this.thirdVisible=true
+      console.log(row)
+      listExamInMarkSystem({
+        grade:(this.exam.type==3||this.exam.type==2)?1:0,
+        gradeId:this.exam.gradeId,
+        pageNum:1,
+        pageSize:10,
+        progress:3,
+        schoolId:this.exam.schoolId,
+        subjectId:row.subjectId,
+        term:this.exam.term,
+        year:this.exam.year
+      }).then(res=>{
+        if(res.data!==null){
+          this.thirdExamList=res.data
+        }else{
+          this.thirdExamList=[]
+        }
+      })
+    },
     updateTotalRanking(){
-      if (!this.totalObj.score) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelOneRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelOneRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelTwoRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelTwoRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelThreeRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelThreeRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFourRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFourRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFiveRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFiveRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelSixRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelSixRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.score) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelOneRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelOneRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelTwoRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelTwoRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelThreeRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelThreeRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFourRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFourRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFiveRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFiveRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelSixRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelSixRankEnd) return this.$message.warning("请完善数据");
       updateExamTarget({
         type:1,
         id:this.totalObj.id,
@@ -399,26 +572,29 @@ export default {
         levelSixRankBegin:this.totalObj.levelSixRankBegin,
         levelSixRankEnd:this.totalObj.levelSixRankEnd
       }).then(res=>{
-        this.$message.success(res.message);
+        if(res.code==="0000"){
+          this.$message.success(res.message);
           setTimeout(() => {
             _this.$router.go(0);
           }, 800);
+        }
+        
       })
     },
     insertTotalRanking(){
-      if (!this.totalObj.score) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelOneRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelOneRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelTwoRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelTwoRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelThreeRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelThreeRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFourRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFourRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFiveRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFiveRankEnd) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelSixRankBegin) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelSixRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.score) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelOneRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelOneRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelTwoRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelTwoRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelThreeRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelThreeRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFourRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFourRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFiveRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFiveRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelSixRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelSixRankEnd) return this.$message.warning("请完善数据");
       insertExamTarget({
         type:1,
         examId:this.examId,
@@ -436,10 +612,13 @@ export default {
         levelSixRankBegin:this.totalObj.levelSixRankBegin,
         levelSixRankEnd:this.totalObj.levelSixRankEnd
       }).then(res=>{
-        this.$message.success(res.message);
+        if(res.code==="0000"){
+          this.$message.success(res.message);
           setTimeout(() => {
             _this.$router.go(0);
           }, 800);
+        }
+        
         
       })
 
@@ -452,19 +631,19 @@ export default {
       }
     },
     insertSubRanking(){
-      if (!this.subjectObj.score) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelOneRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelOneRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelTwoRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelTwoRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelThreeRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelThreeRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFourRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFourRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFiveRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFiveRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelSixRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelSixRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.score) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelOneRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelOneRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelTwoRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelTwoRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelThreeRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelThreeRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFourRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFourRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFiveRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFiveRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelSixRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelSixRankEnd) return this.$message.warning("请完善数据");
       insertExamSchoolSubjectTarget({
         type:1,
         examId:this.examId,
@@ -484,26 +663,28 @@ export default {
         levelSixRankBegin:this.subjectObj.levelSixRankBegin,
         levelSixRankEnd:this.subjectObj.levelSixRankEnd
       }).then(res=>{
-        this.$message.success(res.message);
+        if(res.code==="0000"){
+          this.$message.success(res.message);
           setTimeout(() => {
             _this.$router.go(0);
           }, 800);
+        }
       })
     },
     updateSubRanking(){
-      if (!this.subjectObj.score) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelOneRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelOneRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelTwoRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelTwoRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelThreeRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelThreeRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFourRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFourRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFiveRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFiveRankEnd) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelSixRankBegin) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelSixRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.score) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelOneRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelOneRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelTwoRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelTwoRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelThreeRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelThreeRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFourRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFourRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFiveRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFiveRankEnd) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelSixRankBegin) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelSixRankEnd) return this.$message.warning("请完善数据");
       updateExamSchoolSubjectTarget({
         type:1,
         examId:this.examId,
@@ -522,10 +703,12 @@ export default {
         levelSixRankBegin:this.subjectObj.levelSixRankBegin,
         levelSixRankEnd:this.subjectObj.levelSixRankEnd
       }).then(res=>{
-        this.$message.success(res.message);
+        if(res.code==="0000"){
+          this.$message.success(res.message);
           setTimeout(() => {
             _this.$router.go(0);
           }, 800);
+        }
       })
     },
     submitSubRanking(){
@@ -536,13 +719,13 @@ export default {
       }
     },
     insertTotal(){
-      if (!this.totalObj.score) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelOnePercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelTwoPercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelThreePercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFourPercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFivePercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelSixPercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.score) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelOnePercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelTwoPercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelThreePercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFourPercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFivePercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelSixPercent) return this.$message.warning("请完善数据");
       insertExamTarget({
         type:2,
         examId:this.examId,
@@ -569,13 +752,13 @@ export default {
       })
     },
     updateTotal(){
-      if (!this.totalObj.score) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelOnePercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelTwoPercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelThreePercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFourPercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelFivePercent) return this.$message.warning("请完善数据");
-      if (!this.totalObj.levelSixPercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.score) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelOnePercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelTwoPercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelThreePercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFourPercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelFivePercent) return this.$message.warning("请完善数据");
+      // if (!this.totalObj.levelSixPercent) return this.$message.warning("请完善数据");
       updateExamTarget({
         type:2,
         examId:this.examId,
@@ -594,11 +777,12 @@ export default {
         levelSixPercent:this.totalObj.levelSixPercent,
         levelSixScore:parseInt(parseInt(this.totalObj.levelSixPercent*this.totalObj.score)*0.01),
       }).then(res=>{
-
-        this.$message.success(res.message);
-        setTimeout(() => {
-          _this.$router.go(0);
-        }, 800);
+        if(res.code==="0000"){
+          this.$message.success(res.message);
+          setTimeout(() => {
+            _this.$router.go(0);
+          }, 800);
+        }
       })
     },
     set() {
@@ -609,13 +793,13 @@ export default {
       }
     },
     setSub(){
-      if (!this.subjectObj.score) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelOnePercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelTwoPercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelThreePercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFourPercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFivePercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelSixPercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.score) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelOnePercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelTwoPercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelThreePercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFourPercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFivePercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelSixPercent) return this.$message.warning("请完善数据");
       insertExamSchoolSubjectTarget({
         type:2,
         examId:this.examId,
@@ -644,13 +828,13 @@ export default {
       })
     },
     updateSub(){
-      if (!this.subjectObj.score) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelOnePercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelTwoPercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelThreePercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFourPercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelFivePercent) return this.$message.warning("请完善数据");
-      if (!this.subjectObj.levelSixPercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.score) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelOnePercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelTwoPercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelThreePercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFourPercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelFivePercent) return this.$message.warning("请完善数据");
+      // if (!this.subjectObj.levelSixPercent) return this.$message.warning("请完善数据");
       updateExamSchoolSubjectTarget({
         type:2,
         examId:this.examId,
@@ -671,10 +855,12 @@ export default {
         levelSixPercent:this.subjectObj.levelSixPercent,
         levelSixScore:parseInt(parseInt(this.subjectObj.levelSixPercent*this.subjectObj.score)*0.01),
       }).then(res=>{
-        this.$message.success(res.message);
-        setTimeout(() => {
-          _this.$router.go(0);
-        }, 800);
+        if(res.code==="0000"){
+          this.$message.success(res.message);
+          setTimeout(() => {
+            _this.$router.go(0);
+          }, 800);
+        }
       })
     },
     setSubject(){
@@ -769,21 +955,39 @@ export default {
       this.smallLoading = false;
       this.tableLoading = false
       if (res.code === "0000") {
-        this.$message.success(res.message);
-        setTimeout(() => {
-          _this.$router.go(0);
-        }, 800);
+        if(res.data.length>0){
+          this.uploadList=res.data
+          this.uploadVisible=true
+        }else{
+          this.$message.success(res.message);
+          setTimeout(() => {
+            _this.$router.go(0);
+          }, 500);
+        }
       } else {
         this.$message.error(res.message);
       }
 
     },
+    confirm(){
+      this.uploadVisible=false
+      setTimeout(() => {
+        _this.$router.go(0);
+      }, 500);
+    },
     successUp(res) {
       if (res.code === "0000") {
-        this.$message.success(res.message);
-        setTimeout(() => {
-          _this.$router.go(0);
-        }, 800);
+        if(res.data.length>0){
+          this.uploadList=res.data
+          this.uploadVisible=true
+        }else{
+          this.$message.success(res.message);
+          setTimeout(() => {
+            _this.$router.go(0);
+          }, 500);
+        }
+        
+        
       } else {
         this.$message.error(res.message);
       }
@@ -806,7 +1010,8 @@ export default {
   created() {
     _this = this;
     _this.baseURL = process.env.VUE_APP_URL;
-    this.examId = window.sessionStorage.examId;
+    this.exam=JSON.parse(window.sessionStorage.exam) 
+    this.examId = this.exam.id;
     listExamSubject({
       examId: this.examId
     }).then(res => {
@@ -823,23 +1028,23 @@ export default {
       _this.examInfo = res.data.exam;
       _this.tableLoading = false;
     });
-    selectExamSchoolTarget({
-      examId:this.examId
-    }).then(res=>{
-      if(res.data!==null){
-        this.totalObj=res.data
-        this.totalStatus=1
-        this.sebsectionId=Number(res.data.id)
-      }
-    })
-    listSchoolSubjectsTarget({
-      examId:this.examId
-    }).then(res=>{
-      if(res.data.length!==0){
-        _this.listTarget=res.data
-        _this.subjectStatus=1
-      }
-    })
+    // selectExamSchoolTarget({
+    //   examId:this.examId
+    // }).then(res=>{
+    //   if(res.data!==null){
+    //     this.totalObj=res.data
+    //     this.totalStatus=1
+    //     this.sebsectionId=Number(res.data.id)
+    //   }
+    // })
+    // listSchoolSubjectsTarget({
+    //   examId:this.examId
+    // }).then(res=>{
+    //   if(res.data.length!==0){
+    //     _this.listTarget=res.data
+    //     _this.subjectStatus=1
+    //   }
+    // })
   }
 };
 </script>
@@ -891,5 +1096,12 @@ export default {
   div {
     margin: 0 0 0 20px;
   }
+}
+.dia-c{
+  height: 40vh;
+  overflow-y: scroll;
+}
+.dia-c::-webkit-scrollbar{
+    width:0px
 }
 </style>

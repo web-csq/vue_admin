@@ -64,14 +64,31 @@
     </el-dialog>
     <!-- 授权弹窗 -->
     <el-dialog title="授权" :visible.sync="authorVisible">
-      
+      <div class="tree-c">
+        <div class="tree">
+        <div class="rc-t">{{roleInfo.name+"--->"}} 权限列表：</div>
+        <el-tree
+          :data="treeData"
+          accordion
+          ref="tree"
+          show-checkbox
+          :default-checked-keys="checkedList"
+          default-expand-all
+          check-on-click-node
+          node-key="id"
+          :expand-on-click-node="false"
+        >
+          </el-tree>
+        </div>
+      </div>
+      <Button type="primary" size="small" @click="submitPremiss">授权</Button>
       
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { listAllRoles,insertRole,updateRoleByIdSelective } from "@/api/permission"
+import { getPermissionsForRoleId,authorization,listAllRoles,insertRole,updateRoleByIdSelective } from "@/api/permission"
 let _this;
 export default {
   name:"role",
@@ -80,6 +97,7 @@ export default {
       loading:false,
       authorVisible:false,
       row:{},
+      checkedList:[],
       role:{
         name:"",
         value:"",
@@ -163,12 +181,46 @@ export default {
           align:"center"
         }
       ],
-      tableData:[]
+      tableData:[],
+      list:[],
+      treeData:[],
+      roleInfo:{}
     }
   },
   methods:{
     add(){
       this.addVisible=true
+    },
+    submitPremiss(){
+      let arr= this.$refs.tree.getHalfCheckedNodes()
+      let arr1=this.$refs.tree.getCheckedNodes()
+      let list=""
+      if(arr.length===0 && arr1.length===0){
+        
+      }else{
+        for(let item of arr){
+          list+=item.id+","
+        }
+        for(let item of arr1){
+          list+=item.id+","
+        }
+        list=list.substr(0,list.length-1)
+      }
+      let obj={
+        roleId:this.roleInfo.id,
+      }
+      if(list!==""){
+        obj.permissionIdList=list
+      }
+      authorization(obj).then(res=>{
+        if(res.code==="0000"){
+          this.$message.success(res.message)
+          _this.$router.go(0)
+        }
+      })
+    },
+    getCheckedNodes(node){
+      console.log(node)
     },
     switch(value,id){
       updateRoleByIdSelective({
@@ -190,7 +242,31 @@ export default {
       this.dialogVisible=true
     },
     premiss(row){
-
+      this.roleInfo=row
+      getPermissionsForRoleId({
+        permissionId: 30000,
+        roleId:row.id,
+      }).then(res=>{
+        _this.list = [res.data];
+          _this.changeValue(_this.list);
+          _this.treeData = _this.list;
+          this.checkedList=[]
+           _this.getChecked(_this.list)
+          _this.authorVisible=true
+         
+      })
+    },
+    getChecked(list){
+      if(list.length>0){
+        for( let item of list ){
+          if(item.have){
+            if(item.child.length===0){
+              this.checkedList.push(item.id)
+            }
+          }
+          this.getChecked(item.child)
+        }
+      }
     },
     alterSubmit(name){
        this.$refs[name].validate((valid) => {
@@ -218,26 +294,35 @@ export default {
         })
     },
     handleSubmit(name) {
-        this.$refs[name].validate((valid) => {
-            if (valid) {
-              this.role.isDeleted? this.role.isDeleted=1:this.role.isDeleted=0
-                insertRole({
-                  ...this.role
-                }).then(res=>{
-                  if(res.code==="0000"){
-                    this.$message.success(res.message)
-                    return
-                    setTimeout(()=>{
-                      this.$router.go(0)
-                    },500)
-                  }
-                })
-                
-            } else {
-              
-            }
-        })
+      this.$refs[name].validate((valid) => {
+          if (valid) {
+            this.role.isDeleted? this.role.isDeleted=1:this.role.isDeleted=0
+              insertRole({
+                ...this.role
+              }).then(res=>{
+                if(res.code==="0000"){
+                  this.$message.success(res.message)
+                  return
+                  setTimeout(()=>{
+                    this.$router.go(0)
+                  },500)
+                }
+              })
+
+          } else {
+
+          }
+      })
     },
+    changeValue(list) {
+      if (list.length > 0) {
+        for (let item of list) {
+          item.label = item.name;
+          item.children = item.child;
+          this.changeValue(item.child);
+        }
+      }
+    }
   },
   created(){
     _this=this
@@ -245,6 +330,7 @@ export default {
       console.log(res)
       this.tableData=res.data
     })
+    
   }
 }
 </script>
@@ -254,5 +340,10 @@ export default {
 
 .table >>> .ivu-switch-checked:after{
   left: 34px;
+}
+.tree-c{
+  width: 100%;
+  height: 50vh;
+  overflow-y: scroll;
 }
 </style>

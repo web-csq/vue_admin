@@ -1,8 +1,10 @@
+import qs from "qs"
 export default{
   namespaced:true,
   state:{
     // 左侧菜单栏数据
-    menuItems: [
+    menuItems: 
+    [
       {
           size: 18, // icon大小
           type: 'md-home', // icon类型
@@ -46,12 +48,12 @@ export default{
             {
               type:"md-add",
               name: 's_total_pro_stu_class', // 要跳转的路由名称 不是路径
-              text:"总分进步学生班级",
+              text:"总分绝对进(退)步学生",
             },
             {
               type:"md-add",
               name: 's_total_reg_stu_class', // 要跳转的路由名称 不是路径
-              text:"总分退步学生班级",
+              text:"总分相对进(退)步学生",
             },
             {
               type:"md-add",
@@ -137,37 +139,6 @@ export default{
             ]
           },
           {
-            text: '学生分析报告',
-            type: 'md-contacts',
-            children: [
-                {
-                    type: 'ios-person',
-                    name: 'stu_total_ranking',
-                    text: '总分与名次'
-                },
-                {
-                  type: 'ios-person',
-                  name: 'stu_subject_analyze',
-                  text: '学科分析'
-                },
-                {
-                  type: 'ios-person',
-                  name: 'stu_group_subject',
-                  text: '学科组合分析'
-                },
-                {
-                  type: 'ios-person',
-                  name: 'stu_subject_trand',
-                  text: '学科走势'
-                },
-                {
-                  type: 'ios-person',
-                  name: 'stu_score_forecast',
-                  text: '成绩预测'
-                }
-            ]
-          },
-          {
             text:"学科分析报告",
             type:"md-help-buoy",
             children:[
@@ -222,6 +193,42 @@ export default{
                 name:"subject_diffi_stu_class",
                 text:"学科成绩学困生班级分布"
               }
+            ]
+          },
+          {
+            text: '学生分析报告',
+            type: 'md-contacts',
+            children: [
+                {
+                    type: 'ios-person',
+                    name: 'stu_total_ranking',
+                    text: '总分与名次'
+                },
+                {
+                  type: 'ios-person',
+                  name: 'stu_subject_analyze',
+                  text: '学科分析'
+                },
+                {
+                  type: 'ios-person',
+                  name: 'stu_group_subject',
+                  text: '学科组合分析'
+                },
+                {
+                  type: 'ios-person',
+                  name: 'stu_subject_trand',
+                  text: '学科走势'
+                },
+                {
+                  type: 'ios-person',
+                  name: 'stu_score_forecast',
+                  text: '成绩预测'
+                },
+                {
+                  type: 'ios-person',
+                  name: 'stu_total_sustain',
+                  text: '总分成绩预测'
+                }
             ]
           }
         ],

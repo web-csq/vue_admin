@@ -12,18 +12,22 @@
       </Select>
       分数间隔：
        <div style="display:inline-block;width:80px;">
-         
-        <Input v-model="section"  size="small" placeholder="输入分数段" />
+        <Input v-model="section" @keydown.13.native="getData"  size="small" placeholder="输入分数段" />
       </div>
       
       <Button type="primary" style="margin:0 0 0 10px" :loading="btnLoading" @click="getData" size="small">设置分段</Button>
     </div>
     <div class="chart-c">
+      <div class="downImg">
+        <span @click="downloadImg">保存图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-     <div class="tab-title">班级学科报表</div>
-     <Table border :columns="columns" :data="tableData"></Table>
+     <div class="tab-title">班级学科报表
+        <Button class="fr" type="primary" size="small" icon="ios-download-outline" @click="exportData">导出数据</Button>
+     </div>
+     <Table border ref="table1" :columns="columns" :data="tableData"></Table>
     </div>
   </div>
 </template>
@@ -64,6 +68,14 @@ export default {
     }
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","班级科目分析")
+    },
+    exportData(){
+      this.$refs.table1.exportCsv({
+          filename: this.examInfo.name +'-学科分析'
+      });
+    },
     getData(){
       this.btnLoading=true
       listStudentScoreGroupByClass({
@@ -73,13 +85,21 @@ export default {
         subjectId:this.subject
       }).then(res=>{
         _this.btnLoading=false;
-        if(res.data.length===0) _this.$message.error("暂无数据")
+        if(res.data.length===0) _this.$message.warning("暂无数据")
         
         if(res.code==="0000"){
           let list=[];
-          _this.columns=[]
+          _this.columns=[{
+              title: '分段',
+              key: 'subsc',
+              align:'center',
+              fixed:"left",
+              width: 80,
+          }]
           _this.tableData=[];
-          let tabObj={}
+          let tabObj={
+            "subsc":"数量"
+          }
           for(let item of res.data){
             let obj={},obj1={}
             obj.year=item.name;
@@ -87,6 +107,7 @@ export default {
             list.push(obj)
             obj1.title=item.name;
             obj1.key=item.name
+            obj1.minWidth=80
             obj1.align='center'
             _this.columns.push(obj1)
             tabObj[item.name]=item.count
@@ -101,7 +122,7 @@ export default {
       const chart = new this.$G2.Chart({
         container: 'd1',
         forceFit: true,
-        height: 400
+        height: 500
       });
       chart.source(data);
       chart.scale('数量', {

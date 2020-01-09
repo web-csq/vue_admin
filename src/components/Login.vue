@@ -19,8 +19,8 @@
 </template>
 
 <script>
-import Particles from '@/components/Particles/index'
 import WebFooter from "./WebFooter/index"
+import Particles from './Particles/index'
 import { login } from "@/api/user"
 import { mapState,mapMutations, mapActions } from "vuex"
 export default {

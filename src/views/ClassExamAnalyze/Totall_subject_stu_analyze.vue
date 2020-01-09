@@ -11,52 +11,58 @@
             选择班级：  <Select v-model="selClassId" style="width:200px" @on-change="selClassFn" :label-in-value='true'>
                             <Option :value="item.id" v-for="item in classList" :key="item.id">{{item.name}}</Option>
                         </Select>
-            <div class="divBox" v-if='isShow'>
-                <div class="tit">全体学生学科分析</div>
-                <div class="chart-c">
-                    <div id="d1"></div>
-                </div>
+            <div style="text-align:right;">
+                <span @click="downloadImg">下载图表图片</span>
             </div>
-            <Row>
-                <Col span="12">
-                    <div>
-                        <div class="tits">班级优秀学生学科分析</div>
-                        <div class="chart-c" v-if="isShow2">
-                            <div id="d2"></div>
-                        </div>
-                        <p v-if="warning2" class="p">(班级暂无优秀学生学科分析!!)</p>
+            <div id="tab_list">
+                <div class="divBox" v-if='isShow'>
+                    <div class="tit">全体学生学科分析</div>
+                    <div class="chart-c">
+                        <div id="d1"></div>
                     </div>
-                </Col>
-                <Col span="12">
-                    <div>
-                        <div class="tits">班级良好学生学科分析</div>
-                        <div class="chart-c" v-if='isShow3'>
-                            <div id="d3"></div>
+                </div>
+                <Row>
+                    <Col span="12">
+                        <div>
+                            <div class="tits">班级优秀学生学科分析</div>
+                            <div class="chart-c" v-if="isShow2">
+                                <div id="d2"></div>
+                            </div>
+                            <p v-if="warning2" class="p">(班级暂无优秀学生学科分析!!)</p>
                         </div>
-                        <p v-if="warning3" class="p">(班级暂无良好学生学科分析!!)</p>
-                    </div>
-                </Col>
-            </Row>
-            <Row>
-                <Col span="12">
-                    <div>
-                        <div class="tits">班级及格学生学科分析</div>
-                        <div class="chart-c" v-if='isShow4'>
-                            <div id="d4"></div>
+                    </Col>
+                    <Col span="12">
+                        <div>
+                            <div class="tits">班级良好学生学科分析</div>
+                            <div class="chart-c" v-if='isShow3'>
+                                <div id="d3"></div>
+                            </div>
+                            <p v-if="warning3" class="p">(班级暂无良好学生学科分析!!)</p>
                         </div>
-                        <p v-if="warning4" class="p">(班级暂无及格学生学科分析!!)</p>
-                    </div>
-                </Col>
-                <Col span="12">
-                    <div>
-                        <div class="tits">班级学困学生学科分析</div>
-                        <div class="chart-c" v-if='isShow5'>
-                            <div id="d5"></div>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col span="12">
+                        <div>
+                            <div class="tits">班级及格学生学科分析</div>
+                            <div class="chart-c" v-if='isShow4'>
+                                <div id="d4"></div>
+                            </div>
+                            <p v-if="warning4" class="p">(班级暂无及格学生学科分析!!)</p>
                         </div>
-                        <p v-if="warning5" class="p">(班级暂无学困学生学科分析!!)</p>
-                    </div>
-                </Col>
-            </Row>        
+                    </Col>
+                    <Col span="12">
+                        <div>
+                            <div class="tits">班级学困学生学科分析</div>
+                            <div class="chart-c" v-if='isShow5'>
+                                <div id="d5"></div>
+                            </div>
+                            <p v-if="warning5" class="p">(班级暂无学困学生学科分析!!)</p>
+                        </div>
+                    </Col>
+                </Row>   
+                
+            </div>     
         </div>
     </div>
 </template>
@@ -91,6 +97,9 @@ export default {
         }
     },
     methods:{
+        downloadImg(){
+            this.$downloadChart("tab_list","全体学生学科分析")
+        },
         selClassFn(data){//选择班级
             this.selClassId = data.value;
             this.dataYName = data.label;
@@ -114,7 +123,6 @@ export default {
             const chart = new this.$G2.Chart({
                 container: dom,
                 forceFit: true,
-                width:300,
                 height: heights,
                 padding: [ 20, 20, 95, 20 ]
             });
@@ -122,7 +130,8 @@ export default {
             chart.source(dv, {
             score: {
                 min: 0,
-                max: 200
+                max: 150,
+                // tickInterval:10,
             }
             });
             chart.coord('polar', {
@@ -190,14 +199,14 @@ export default {
                         this.isShow = true
                         for(let item of res.data.examClassSubject){
                             let obj ={};
-                            obj.item = item.subjectName;
+                            obj.item = item.subjectName.substring(2);
                             obj['年级'] = item.gradeAvgScore;
                             obj[this.dataYName] = item.avgScore;
                             this.chartData.push(obj);
                         }
                         // console.log(this.chartData);
                         this.$nextTick( ()=> {
-                            this.setChart('d1',this.chartData,this.dataYName,400);
+                            this.setChart('d1',this.chartData,this.dataYName,500);
                         })
                     }else{
                         this.$Message.warning('该班级暂无全体学生分析数据');
@@ -212,13 +221,13 @@ export default {
                             for(let itemG of res.data.levelOneGradeAvg){//年级
                                 let obj ={};
                                 obj['年级'] = itemG.score;
-                                obj.items = itemG.subjectName;
+                                obj.items = itemG.subjectName.substring(2);
                                 gradeOneList.push(obj)
                             }
                             for(let items of res.data.levelOneClassAvg){//班级
                                 let c_obj = {};
                                 c_obj[this.dataYName] = items.score;
-                                c_obj.items = items.subjectName;
+                                c_obj.items = items.subjectName.substring(2);
                                 classOneList.push(c_obj);
                             }
                             // console.log('===',gradeOneList);
@@ -236,7 +245,7 @@ export default {
 
                             }
                             this.$nextTick( ()=> {
-                                this.setChart('d2',this.chartData5,this.dataYName,350);
+                                this.setChart('d2',this.chartData5,this.dataYName,500);
                             })
                         }else{
                             this.warning2 = true;
@@ -255,13 +264,13 @@ export default {
                             for(let itemG of res.data.levelTwoGradeAvg){//年级
                                 let obj ={};
                                 obj['年级'] = itemG.score;
-                                obj.items = itemG.subjectName;
+                                obj.items = itemG.subjectName.substring(2);
                                 gradeTwoList.push(obj)
                             }
                             for(let items of res.data.levelTwoClassAvg){//班级
                                 let c_obj = {};
                                 c_obj[this.dataYName] = items.score;
-                                c_obj.items = items.subjectName;
+                                c_obj.items = items.subjectName.substring(2);
                                 classTwoList.push(c_obj);
                             }
                             // console.log('===',gradeTwoList);
@@ -279,7 +288,7 @@ export default {
 
                             }
                             this.$nextTick( ()=> {
-                                this.setChart('d3',this.chartData4,this.dataYName,350);
+                                this.setChart('d3',this.chartData4,this.dataYName,500);
                             })
                         }else{
                             this.warning3 = true;
@@ -298,13 +307,13 @@ export default {
                             for(let itemG of res.data.levelThreeGradeAvg){//年级
                                 let obj ={};
                                 obj['年级'] = itemG.score;
-                                obj.items = itemG.subjectName;
+                                obj.items = itemG.subjectName.substring(2);
                                 gradeThreeList.push(obj)
                             }
                             for(let items of res.data.levelThreeClassAvg){//班级
                                 let c_obj = {};
                                 c_obj[this.dataYName] = items.score;
-                                c_obj.items = items.subjectName;
+                                c_obj.items = items.subjectName.substring(2);
                                 classThreeList.push(c_obj);
                             }
                             for(let i in gradeThreeList){
@@ -320,7 +329,7 @@ export default {
 
                             }
                             this.$nextTick( ()=> {
-                                this.setChart('d4',this.chartData3,this.dataYName,350);
+                                this.setChart('d4',this.chartData3,this.dataYName,500);
                             })
                         }else{
                             this.warning4 = true;
@@ -339,13 +348,13 @@ export default {
                             for(let itemG of res.data.levelSixGradeAvg){//年级
                                 let obj ={};
                                 obj['年级'] = itemG.score;
-                                obj.items = itemG.subjectName;
+                                obj.items = itemG.subjectName.substring(2);
                                 gradeSixList.push(obj)
                             }
                             for(let items of res.data.levelSixClassAvg){//班级
                                 let c_obj = {};
                                 c_obj[this.dataYName] = items.score;
-                                c_obj.items = items.subjectName;
+                                c_obj.items = items.subjectName.substring(2);
                                 classSixList.push(c_obj);
                             }
                             for(let i in gradeSixList){
@@ -361,7 +370,7 @@ export default {
 
                             }
                             this.$nextTick( ()=> {
-                                this.setChart('d5',this.chartData2,this.dataYName,350);
+                                this.setChart('d5',this.chartData2,this.dataYName,500);
                             })
                         }else{
                             this.warning5 = true;

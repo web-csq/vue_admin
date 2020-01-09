@@ -65,6 +65,7 @@ export default {
         subjectId: this.subject
       }).then(res => {
         this.loading = false;
+        if(res.code==="0000"){
         if (res.data === null || res.data.length === 0) {
           this.chartShow = false;
           this.$message.warning("暂无数据")
@@ -89,7 +90,7 @@ export default {
           _this.$nextTick(() => {
             this.setLineChart(this.chartList);
           });
-        }
+        }}
       });
     },
     setLineChart(data) {

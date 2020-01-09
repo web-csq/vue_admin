@@ -1,11 +1,17 @@
 <template>
   <div>
     <div class="chart-c" style="margin:30px 0 0 0;">
+      <div class="downImg">
+        <span @click="downloadImg">保存图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-      <div class="tab-title">年级班级总分分布报表</div>
-        <Table border :columns="columns" :data="tableData"></Table>
+      <div class="tab-title">年级班级总分分布报表
+        <Button class="fr" type="primary" size="small" icon="ios-download-outline" @click="exportData">导出数据</Button>
+
+      </div>
+        <Table border ref="table1" :columns="columns" :data="tableData"></Table>
       </div>
   </div>
 </template>
@@ -32,6 +38,14 @@ export default {
     })
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","年级班级总分分布")
+    },
+    exportData(){
+      this.$refs.table1.exportCsv({
+          filename: this.examInfo.name +'-年级班级总分分布'
+      });
+    },
     initChart(data){
         const chart = new this.$G2.Chart({
         container: 'd1',

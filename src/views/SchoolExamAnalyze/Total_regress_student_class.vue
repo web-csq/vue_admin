@@ -1,172 +1,133 @@
 <template>
   <div>
-    <div v-if="isShow">
-      <div>绝对名次分布</div>
+    <div >
+      <div>相对进(退)步学生人数</div>
       <div class="chart-c">
-        <div id="d1"></div>
-      </div>
-    </div>
-    <div v-if="isShow">
-      <div>相对名次分布</div>
-      <div class="chart-c">
+        <div style="text-align:right">
+          <span @click="downloadImg">下载图表图片</span>
+        </div>
         <div id="d2"></div>
       </div>
+    </div>
+    <div class="tab-container">
+      <div class="tab-title">总分相对进(退)步学生名单
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table border ref="table1" :columns="columns" :data="tabData" :loading='loading'></Table>
     </div>
   </div>
 </template>
 
 <script>
-const data=[
-    {
-    "Class": "高一一班",
-    "Grade": "男",
-    "Score": 10
-    },
-    {
-    "Class": "高一二班",
-    "Grade": "男",
-    "Score": 23
-    },
-    {
-    "Class": "高一一班",
-    "Grade": "男",
-    "Score": 2
-    },
-    {
-    "Class": "高一二班",
-    "Grade": "男",
-    "Score": 5
-    },
-    {
-    "Class": "高一三班",
-    "Grade": "女",
-    "Score": 8
-    },
-    {
-    "Class": "高一二班",
-    "Grade": "女",
-    "Score": 6
-    },
-    {
-    "Class": "高一一班",
-    "Grade": "女",
-    "Score": 7
-    },
-    {
-    "Class": "高一一班",
-    "Grade": "男",
-    "Score": 10
-    }
-]
 import { selectGradeListClassProgressOrRetrogress } from "@/api/schoolAnalyze"
 import { mapState } from "vuex"
 export default {
   name: "s_total_reg_stu_class",
   data() {
     return {
-      absoluteList:[],//绝对
-      relativeList:[],
-      isShow:false,
+      relativeList:[],//相对
+      loading:true,
+      tabData:[],
+      columns:[
+        {
+          title: '班级',
+          key: 'className',
+          align:'center'
+        },
+        {
+          title: '学生',
+          key: 'userName',
+          align:'center'
+        },
+        {
+          title: "进(退)步名次('-'表退步)",
+          key: 'gradeRank',
+          align:'center'
+        }
+      ],
     }
   },
   methods:{
-    setChart(dom,data){
+    downloadImg(){
+      this.$downloadChart("d2","总分相对进(退)步学生名单")
+    },
+    exportData(){//导出全校排名数据
+      if(this.tabData.length!= 0){
+        this.$refs.table1.exportCsv({
+          filename: this.examInfo.name +'总分相对进(退)步学生名单'
+        });
+      }else{
+        this.$Message.warning('表格暂无数据,数据不能导出')
+      }
+    },
+    setBar(dom,data){
       const chart = new this.$G2.Chart({
         container: dom,
         forceFit: true,
-        height: 400
+        height: 500
       });
-      chart.clear();
-      chart.source(data,{
-        Score:{
-          min:0,
+      chart.source(data);
+      chart.interval().position('班级*人数').color('name',function(name){
+        if(name == "相对进步"){
+          return 'green'
+        }else{
+          return 'red'
         }
-      });
-      chart.tooltip({
-        crosshairs: {
-          type: 'cross'
-        }
-      });
-      chart.axis('Score', {
-        grid: null
-      });
-      // x轴的栅格线居中
-      chart.axis('Class', {
-        tickLine: null,
-        subTickCount: 1, // 次刻度线个数
-        subTickLine: {
-          lineWidth: 1,
-          stroke: '#BFBFBF',
-          length: 4
-        },
-        grid: {
-          align: 'center', // 网格顶点从两个刻度中间开始
-          lineStyle: {
-            stroke: '#8C8C8C',
-            lineWidth: 1,
-            lineDash: [ 3, 3 ]
-          }
-        }
-      });
-      chart.point().position('Class*Score')
-        .color('Grade')
-        .adjust('jitter')
-        .shape('circle')
-        .opacity(0.65)
-        .size(4);
-        chart.legend(false);
+      })
+        .adjust([{
+          type: 'dodge',
+          marginRatio: 1 / 32
+        }]);
       chart.render();
     },
     async setSelectGradeListClassProgressOrRetrogress(){
-      this.absoluteList = [];
       this.relativeList = [];
+      this.tabData = [];
       selectGradeListClassProgressOrRetrogress({
         examId:this.examInfo.id,//97
       }).then( res => {
+        this.loading = false
         if(res.code == "0000"){//相对
           // console.log(res);
-          if(res.data.absolute != null){//绝对
-            this.isShow = true
-            let absoluteData = res.data.absolute;
-            for( let i in absoluteData){
-              let classnames = absoluteData[i].className;
-              for(let j in absoluteData[i].list){
-                if(absoluteData[i].list[j].gradeRank > 0){
-                  let obj = {};
-                  obj.Class = classnames;
-                  obj.Grade = absoluteData[i].list[j].userName
-                  obj.Score = absoluteData[i].list[j].gradeRank
-                  this.absoluteList.push(obj);
-                }
-              }
-            }
-            this.$nextTick( ()=> {
-              this.setChart('d1',this.absoluteList);
-            })
-          }
           if(res.data.relative != null){
-            this.isShow = true
             let relativeData = res.data.relative;
-            for( let i in relativeData){
-              let classnames = relativeData[i].className;
-              for(let j in relativeData[i].list){
-                  if(relativeData[i].list[j].gradeRank > 0){
-                    let obj = {};
-                    obj.Class = classnames;
-                    obj.Grade = relativeData[i].list[j].userName
-                    obj.Score = relativeData[i].list[j].gradeRank
-                    this.relativeList.push(obj);
-                  }
+            for(let a_item of relativeData){
+              let progressCount = 0;
+              let regCount = 0;
+              
+              for(let a_c_item of a_item.list){
+                let tabDataList = {};
+                tabDataList.className = a_item.className;
+                tabDataList.userName = a_c_item.userName;
+                tabDataList.gradeRank = -a_c_item.gradeRank;
+                this.tabData.push(tabDataList);
+                if(a_c_item.gradeRank < 0){
+                  progressCount ++
+                }else{
+                  regCount ++
+                }
+
+              }
+              if(progressCount >=0){
+                let a_obj = {}
+                a_obj['人数'] = progressCount;
+                a_obj.name = '相对进步';
+                a_obj['班级'] = a_item.className;
+                this.relativeList.push(a_obj);
+              }
+              if(regCount >= 0){
+                let a_obj = {}
+                a_obj['人数'] = regCount;
+                a_obj.name = '相对退步';
+                a_obj['班级'] = a_item.className;
+                this.relativeList.push(a_obj);
               }
             }
             this.$nextTick( ()=> {
-              this.setChart('d2',this.relativeList);
+              this.setBar('d2',this.relativeList);
             })
           }
-          if(res.data.relative == null || res.data.absolute == null){
-            this.isShow = false
-            this.$Message.warning('暂无分析数据');
-          }
+
         }
       })
     }
@@ -178,7 +139,6 @@ export default {
   },
   mounted() {
     this.setSelectGradeListClassProgressOrRetrogress();
-    // this.setChart();
   }
 };
 </script>

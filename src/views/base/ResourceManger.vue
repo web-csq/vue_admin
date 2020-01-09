@@ -40,6 +40,14 @@
           <div class="key">描述：</div>
           <div class="value" v-html="intrObj.description?intrObj.description:'暂无'"></div>
         </div>
+        <div class="intr-c">
+          <div class="key">访问路径：</div>
+          <div class="value" v-html="intrObj.url?intrObj.url:'暂无'"></div>
+        </div>
+        <div class="intr-c">
+          <div class="key">类型</div>
+          <div class="value"> {{intrObj.type===0?"目录":(intrObj.type===1?"菜单":"按钮")}}</div>
+        </div>
         <div class="intr-c" style="display:block">
           <div>下属权限：</div>
           <div style="padding: 15px 20px;" v-for="(item,index) in intrObj.child" :key="index">
@@ -191,7 +199,7 @@ export default {
           { required: true, message: "描述不能为空", trigger: "blur" }
         ],
         orderNumber: [
-          { required: true, message: "请输入合法数字", trigger: "blur" }
+          
         ],
         icon: [{ required: true, message: "请输入图表名称", trigger: "blur" }],
         type: [{ required: true, message: "请选择权限类型", trigger: "blur" }],
@@ -200,11 +208,8 @@ export default {
     };
   },
   methods: {
-    handleUpload(file) {
-      this.role.icon = file;
-      return false;
-    },
     append(data) {
+      if(data.type!==0) return this.$message.warning("禁止添加")
       this.addData = data;
       this.addVisible = true;
       // this.dialogVisible=true
@@ -218,13 +223,32 @@ export default {
     },
     alter(node, data) {
       this.alterVisible=true
-      console.log(data)
       this.alterInfo=data
+      this.alterInfo.type+=""
+      
     },
     alterSubmit(name){
        this.$refs[name].validate(valid => {
         if (valid) {
-
+          updatePermissionByIdSelective({
+            deleted:this.alterInfo.deleted?1:0,
+            description:this.alterInfo.description,
+            icon:this.alterInfo.icon,
+            id:this.alterInfo.id,
+            name:this.alterInfo.name,
+            orderNumber:this.alterInfo.orderNumber,
+            parentId:this.alterInfo.parentId,
+            type:this.alterInfo.type,
+            url:this.alterInfo.url,
+            value:this.alterInfo.value,
+          }).then(res=>{
+            if(res.code==="0000"){
+              _this.$message.success(res.message);
+              setTimeout(() => {
+                _this.$router.go(0);
+              }, 500);
+            }
+          })
         }else{
 
         }
@@ -244,7 +268,6 @@ export default {
             url: this.role.url,
             value: this.role.value
           }).then(res => {
-            return
             if (res.code === "0000") {
               _this.$message.success(res.message);
               setTimeout(() => {

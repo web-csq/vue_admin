@@ -193,6 +193,9 @@ export default {
       font-size: 16px;
     }
   }
+  .topBox:hover{
+    transform: scale(1.1)
+  }
   .tab-container{
     .tab-title{
       font-size: 16px!important;

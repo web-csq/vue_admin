@@ -24,4 +24,9 @@ export const stuRoutes={
     name: 'stu_group_subject',
     component: () => import('@/views/StuExamAnalyze/Group_subject.vue')
   },
+  'stu_total_sustain': {
+    path: 'stu_total_sustain',
+    name: 'stu_total_sustain',
+    component: () => import('@/views/StuExamAnalyze/Total_sustain_after.vue')
+  },
 }

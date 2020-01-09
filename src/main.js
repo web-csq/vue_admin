@@ -4,15 +4,15 @@ import store from './store'
 import router from './router'
 import http from "./http"
 import iview from 'iview'
-
+import nullData from "@/components/NullData"
 import G2 from '@antv/g2';
 import DataSet from '@antv/data-set';
-
+import { downloadChart } from "@/vender/html2"
 
 Vue.use(iview)
 import './permission'
 Vue.config.productionTip = false
-
+Vue.component("null-data",nullData)
 import {
   Pagination,
   Dialog,
@@ -76,6 +76,7 @@ Vue.prototype.$message = Message;
 Vue.prototype.$http = http;
 Vue.prototype.$G2 = G2;
 Vue.prototype.$DataSet = DataSet;
+Vue.prototype.$downloadChart = downloadChart;
 
 
 new Vue({

@@ -8,7 +8,7 @@
     </div>
     <div v-if="selLoading">
       选择班级：<Select  v-model="selClassId" style="width:200px" @on-change="selClassFn">
-        <Option :value="0" >全部</Option>
+        <!-- <Option :value="0" >全部</Option> -->
         <Option :value="item.id" v-for="item in classList" :key="item.id">{{item.name}}</Option>
     </Select>
     </div>
@@ -16,8 +16,10 @@
       <div id="d1"></div>
     </div>
     <div class="tab-container" v-if='isShow'>
-      <div class="tab-title">班级分学科准优秀学生报表</div>
-      <Table border :columns="columns" :data="dataList" :loading='loading'></Table>
+      <div class="tab-title">班级分学科准良好学生报表
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table border :columns="columns" :data="dataList" ref="table1" :loading='loading'></Table>
     </div>
   </div>
 </template>
@@ -106,6 +108,15 @@ export default {
     }
   },
   methods:{
+    exportData(){//导出全校排名数据
+        if(this.dataList.length != 0){
+          this.$refs.table1.exportCsv({
+              filename: this.examInfo.name +'班级分学科准良好学生报表'
+          });
+        }else{
+          this.$Message.warning('表格暂无数据,数据不能导出')
+        }
+    },
     selClassFn(){
       this.type ++
       this.loading = true
@@ -115,7 +126,7 @@ export default {
       const chart = new this.$G2.Chart({
         container: dom,
         forceFit: true,
-        height: 400
+        height: 500
       });
       chart.clear();
       chart.source(data,{
@@ -170,9 +181,7 @@ export default {
       this.absoluteList = [];
       this.dataList = [];
       let obja = {};
-      if(this.selClassId != ''){
-        obja.classId = this.selClassId;
-      }
+      obja.classId = this.selClassId;
       obja.examId = this.examInfo.id;
       selectGradeListClassLevleTwo(obja).then( res => {
         this.selLoading = true;
@@ -221,6 +230,8 @@ export default {
         gradeId:this.examInfo.gradeId
       }).then( res => {
         this.classList = res.data;
+        this.selClassId = res.data[0].id;
+        this.setSelectGradeListClassLevleTwo();
       })
     }
   },
@@ -231,7 +242,7 @@ export default {
   },
   mounted() {
     this.getClassList();
-    this.setSelectGradeListClassLevleTwo();
+    
   }
 };
 </script>

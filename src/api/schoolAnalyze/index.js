@@ -88,3 +88,24 @@ export const dataKanban = (data) =>
         url:'/gradeAnalysis/dataKanban',
         data
     }) 
+
+// 列出各科最高分
+export const listTheHighestScoresInEachSubject = (data) =>
+    post({
+        url:'/gradeAnalysis/listTheHighestScoresInEachSubject',
+        data
+    })
+
+// 年级总分排名(含排名筛选)
+export const listStudentExamResultInfoByGradeRank = (data) =>
+    post({
+        url:'/gradeAnalysis/listStudentExamResultInfoByGradeRank',
+        data
+    })
+
+// 列出各科分数统计信息
+export const listEachSubjectScoreInfo = (data) =>
+    post({
+        url:'/gradeAnalysis/listEachSubjectScoreInfo',
+        data
+    })

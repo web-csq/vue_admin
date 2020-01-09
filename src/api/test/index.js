@@ -28,6 +28,12 @@ export const analysisSubjects=(data)=>
     data
   })
 
+export const listExamInMarkSystem=(data)=>
+  post({
+    url:"/exam/listExamInMarkSystem",
+    data
+  })
+
 export const deleteExam=(data)=>
   post({
     url:"/exam/deleteExam",

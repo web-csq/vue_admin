@@ -1,6 +1,9 @@
 <template>
   <div>
     <div class="chart-c">
+      <div class="downImg">
+        <span @click="downloadImg">保存图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
   </div>
@@ -35,6 +38,9 @@ export default {
     }
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","学科成绩总体分布")
+    },
     initChart(data){
       const chart = new this.$G2.Chart({
         container: 'd1',
@@ -62,11 +68,6 @@ export default {
           }
         }
       });
-      chart
-        .line()
-        .position('科目*分数')
-        .color("#d9d9d9")
-        .shape('smooth');
       chart.interval().position('科目*分数').color('name')
         .adjust([{
           type: 'dodge',
@@ -90,7 +91,7 @@ export default {
       schoolId:this.examInfo.schoolId
     }).then(res=>{
       if(res.code==="0000"){
-        let list=[]
+        let list=[];
         for(let item of res.data){
           let obj={}
           if(item.maxScore!==null){
@@ -114,7 +115,6 @@ export default {
             list.push(obj)
           }
         }
-        console.log(list)
         this.initChart(list)
       }
     })

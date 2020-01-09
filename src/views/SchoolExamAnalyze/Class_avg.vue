@@ -1,11 +1,16 @@
 <template>
   <div>
     <div class="chart-c">
+      <div style="text-align:right;">
+        <span @click="downloadImg">下载图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-      <div class="tab-title">班级平均分报表</div>
-      <Table border :columns="columns" :data="data"></Table>
+      <div class="tab-title">班级平均分报表
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table border ref="table1" :columns="columns" :data="data"></Table>
     </div>
 
   </div>
@@ -62,6 +67,14 @@ export default {
     })
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","平均分对比")
+    },
+    exportData(){//导出全校排名数据
+        this.$refs.table1.exportCsv({
+          filename: this.examInfo.name +'平均分对比'
+      });
+    },
     setLintChart(data){
       const chart = new G2.Chart({
         container: 'd1',
@@ -69,7 +82,7 @@ export default {
         height: 500,
       });
       chart.source(data);
-      chart.scale('value', {
+      chart.scale('平均分', {
         min: 0
       });
       chart.scale('year', {
@@ -80,8 +93,8 @@ export default {
           type: 'line'
         }
       });
-      chart.line().position('year*value');//.shape('smooth')曲线;
-      chart.point().position('year*value')
+      chart.line().position('year*平均分');//.shape('smooth')曲线;
+      chart.point().position('year*平均分')
         .size(4)
         .shape('circle')
         .style({
@@ -101,7 +114,7 @@ export default {
               for(let i in res.data){
                 let obj = {};
                 obj.year = res.data[i].className;
-                obj.value = res.data[i].avgScore;
+                obj['平均分'] = res.data[i].avgScore;
                 this.avgClassList.push(obj);
               }
               // console.log(this.avgClassList)

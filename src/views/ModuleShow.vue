@@ -83,8 +83,8 @@ $main_blue:#409EFF;
       box-shadow: 0 0 2px 2px #f4f4f4;
       width: 31%;
       img{
-        width: 100px;
-        height: 60px;
+        width: 64px;
+        height: 64px;
       }
       h4{
         margin: 10px 0;

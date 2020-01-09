@@ -10,7 +10,7 @@
         >{{item.subjectName}}</Radio>
       </RadioGroup>
     </div>
-    <div class="chart-c" v-if="chartShow" style="max-width:1280px;margin:20px 0 0 0">
+    <div class="chart-c" v-if="chartShow" style="margin:20px 0 0 0">
       <div id="d1"></div>
     </div>
     <div class="tab-container" style="margin-top:20px;padding:20rpx" v-if="chartShow">

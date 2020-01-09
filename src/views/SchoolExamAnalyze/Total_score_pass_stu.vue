@@ -2,11 +2,16 @@
   <div>
     <!-- 良好学生 -->
     <div class="chart-c">
+      <div style="text-align:right">
+        <span @click="downloadImg">下载图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-      <div class="tab-title">总分及格学生班级报表</div>
-      <Table border :columns="columns" :data="data" :loading='loading'></Table>
+      <div class="tab-title">总分及格学生班级报表
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table border ref="table1" :columns="columns" :data="data" :loading='loading'></Table>
     </div>
     <!-- <h5 style="margin:20px 0 0 0;">
       诊断分析：<span style="color:#f10215">峰度大，成绩相比不稳定</span>
@@ -52,29 +57,68 @@ export default {
     }
   },
   methods:{
-    setLineChart(data){
-        const chart = new G2.Chart({
-          container: 'd1',
-          forceFit: true,
-          height: 500
-        });
-        chart.source(data);
-        chart.axis('country', {
-          label: {
-            offset: 12
-          }
-        });
-        chart.coord().transpose();
-        chart.interval().position('country*人数');
-        chart.render();
-
-        if(this.type != 0){
-          this.$nextTick(()=>{
-            if(document.getElementById("d1").children.length>1){
-              document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
-            }
-          })
+    downloadImg(){
+      this.$downloadChart("d1","总分及格学生班级报表")
+    },
+    exportData(){//导出全校排名数据
+        if(this.data.length!=0){
+          this.$refs.table1.exportCsv({
+              filename: this.examInfo.name +'总分及格学生班级报表'
+          });
+        }else{
+          this.$Message.warning('表格暂无数据,数据不能导出')
         }
+    },
+    setLineChart(data){
+      const chart = new this.$G2.Chart({
+        container: 'd1',
+        forceFit: true,
+        height: 500,
+      });
+      chart.source(data,{
+        "sales":{
+          min: 0,
+          // max: 600,
+          alias:"人数",
+          // tickCount: 10
+        },
+        "year":{
+          alias:"班级",
+        }
+      });
+      chart.axis('year', {
+        title: {
+          textStyle: {
+            fontSize: 14, // 文本大小
+            textAlign: 'center', // 文本对齐方式
+            fill: '#000', // 文本颜色
+          }
+        },
+      });
+      chart.axis('sales', {
+        title: {
+          textStyle: {
+            fontSize: 14, // 文本大小
+            textAlign: 'end', // 文本对齐方式
+            fill: '#000', // 文本颜色
+          }
+        }
+      });
+      
+      chart.legend(false);
+      chart.line().position('year*sales').color("#d9d9d9").shape('smooth');
+      chart.interval().position('year*sales').color("year",()=>{
+        return "#2D8CF0"
+      });
+
+      chart.render();
+      if(this.type != 0){
+        this.$nextTick(()=>{
+          if(document.getElementById("d1").children.length>1){
+            document.getElementById("d1").removeChild(document.getElementById("d1").firstChild)
+          }
+        })
+      }
     },
     async setSelectGradeListClassLevleFive(){//总分及格学生班级分布图
       this.data = [];
@@ -89,8 +133,8 @@ export default {
             if(res.data.length != 0){
               for(let item of res.data){
                 let obj = {};
-                obj.country = item.className
-                obj['人数'] = item.list.length 
+                obj.year = item.className
+                obj.sales = item.list.length 
                 this.chartList.push(obj);
                 for(let itemList of item.list){
                   let tabObj = {};

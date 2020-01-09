@@ -20,7 +20,10 @@
         >第{{ item.order }}题</Option>
       </Select>
     </div>
-    <div class="chart-c" style="margin:20px 0 0 0;" v-show="chartShow">
+    <div class="chart-c" style="margin:20px 0 0 0;" v-if="chartShow">
+      <div class="downImg">
+        <span @click="downloadImg">保存图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
   </div>
@@ -51,16 +54,21 @@ export default {
     })
   },
   methods: {
+    downloadImg(){
+      this.$downloadChart("d1","年级班级总分分布")
+    },
     getQuestions() {
       listExamSubjectAnswer({
         examId: this.examInfo.id,
         subjectId: this.subject
       }).then(res => {
         if (res.data.length !== 0) {
+          _this.chartShow = true;
           _this.questionList = res.data;
           _this.question = _this.questionList[0].order;
           _this.getJson();
         } else {
+          _this.chartShow = false;
           _this.questionList = [];
           _this.$message.warning("该学科暂无数据");
         }
@@ -88,7 +96,10 @@ export default {
           obj.Name = item.userName;
           list.push(obj);
         }
-        _this.initChart(list);
+        this.$nextTick(()=>{
+          _this.initChart(list);
+        })
+        
       });
     },
     initChart(data) {

@@ -6,15 +6,20 @@
           </el-checkbox-group>
     </div>
     <div style="margin-bottom:10px;">
-        分数间隔：<InputNumber  :min="1" :step="10" v-model="setSession"></InputNumber>
+        分数间隔：<Input style="width:60px;" size='small' type="number" :min="1" :step="10" v-model="setSession" @keydown.enter.native='setScore' />
         <Button size="small" style="margin-left:10px" type="primary" @click="setScore" :loading="loading">设置分段</Button>
       </div>
     <div class="chart-c">
+      <div style="text-align:right">
+        <span @click="downloadImg">下载图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
     <div class="tab-container">
-      <div class="tab-title">总分年级分段报表</div>
-      <Table border :columns="columns" :data="tabData" :loading="tabLoading"></Table>
+      <div class="tab-title">总分年级分段报表
+        <Button class="fr" type="primary" size="small" @click="exportData"><Icon type="ios-download-outline"></Icon>导出数据</Button>
+      </div>
+      <Table border ref="table1" :columns="columns" :data="tabData" :loading="tabLoading"></Table>
     </div>
     <!-- 设置分数段 -->
   </div>
@@ -45,6 +50,14 @@ export default {
     })
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","总分年级分段报表")
+    },
+    exportData(){//导出全校排名数据
+        this.$refs.table1.exportCsv({
+          filename: this.examInfo.name +'总分年级分段报表'
+      });
+    },
     setScore(){
       this.type ++;
       if(this.subject.length == 0){
@@ -66,7 +79,7 @@ export default {
       const chart = new this.$G2.Chart({
         container: 'd1',
         forceFit: true,
-        height: 350,
+        height: 500,
       });
       chart.source(data,{
         "sales":{
@@ -102,6 +115,7 @@ export default {
         position: 'bottom', // 设置图例的显示位置
         itemGap: 20 // 图例项之间的间距
       });
+      chart.line().position('year*sales').color("#d9d9d9").shape('smooth');
       chart.interval().position('year*sales').color("year",()=>{
         return "#2D8CF0"
       });

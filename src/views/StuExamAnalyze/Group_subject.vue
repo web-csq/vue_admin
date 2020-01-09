@@ -4,17 +4,26 @@
       <div style="width:45px;margin:10px 0 0 0">
         科目：
       </div>
-       <div class="checkbox-group">
+      <div class="checkbox-group">
           <el-checkbox-group v-model="subject" size="small" @change="handleCheckedCitiesChange">
             <el-checkbox v-for="(item,index) in list" :key="index" :label="item.subjectId" border>{{item.subjectName}}</el-checkbox>
           </el-checkbox-group>
         </div>
     </div>
+    <div  style="margin-bottom:10px;">
+      选择班级：<Select v-model="selClassId" style="width:200px" @on-change="selClassFn">
+              <Option :value="item.id" v-for="item in classArr" :key="item.id">{{item.name}}</Option>
+          </Select>
+    </div>
     <div class="center">
       全选：<el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
       <Button style="margin:0 0 0 20px" size="small" type="primary" :loading="btnLoading" @click="comfirm">确定</Button>
     </div>
-    <div class="chart-c" style="max-width:1280px;margin:20px 0 0 0">
+    
+    <div class="chart-c" style="margin:20px 0 0 0">
+      <div class="downImg">
+        <span @click="downloadImg">保存图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
   </div>
@@ -22,6 +31,7 @@
 
 <script>
 import { subjectCombinationAnalysis } from "@/api/stuAnalyze" 
+import { listClass } from "@/api/user"
 import { mapState } from "vuex"
 let _this;
 export default {
@@ -46,21 +56,31 @@ export default {
               id: '3',
               name: '生物'
           }
-       ],
+      ],
+      selClassId:0,
+      classArr:[],
     }
   },
   methods:{
+    downloadImg(){
+      this.$downloadChart("d1","学科组合分析")
+    },
+    selClassFn(){
+      this.comfirm();
+      // console.log(this.selClassId)
+    },
     comfirm(){
       this.btnLoading=true
       if(this.subject.length===0) {
         this.btnLoading=false
-        return this.$message.warning("请选择班级")
+        return this.$message.warning("请选择科目")
       }
       let list="";
       for(let item of this.subject){
         list+=item+","
       }
       subjectCombinationAnalysis({
+        classId:this.selClassId,
         schoolId:this.examInfo.schoolId,
         gradeId:this.examInfo.gradeId,
         examId:this.examInfo.id,
@@ -145,6 +165,19 @@ export default {
          }
       })
     },
+    async getClassList(){//得到班级列表
+      this.classArr = [];
+      listClass({
+        schoolId:this.examInfo.schoolId,
+        gradeId: this.examInfo.gradeId
+      }).then( res => {
+        if(res.code == "0000"){
+          this.selClassId = res.data[0].id
+          this.classArr = res.data;
+          this.comfirm();
+        }
+      })
+    },
   },
   computed:{
     ...mapState({
@@ -156,6 +189,7 @@ export default {
   },
   created(){
     _this=this;
+  
     this.classList=this.examInfo.subjectList
     this.list=[];
     for(let item in this.classList){
@@ -167,7 +201,7 @@ export default {
     }else{
       this.checkAll=true
     }
-    this.comfirm()
+    _this.getClassList();
   }
 }
 </script>

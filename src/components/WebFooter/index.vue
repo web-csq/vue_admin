@@ -30,9 +30,7 @@ export default {
     conf() {
       return conf;
     }
-  },
-  methods: {},
-  created() {}
+  }
 };
 </script>
 

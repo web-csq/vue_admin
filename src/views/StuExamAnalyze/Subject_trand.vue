@@ -7,10 +7,13 @@
       </Select>
     </div>
     <div class="chart-c" v-if="chartShow">
+      <div class="downImg">
+        <span @click="downloadImg">保存图表图片</span>
+      </div>
       <div id="d1"></div>
     </div>
     <div v-if="chartShow">学生列表：</div>
-    <div style="margin-top: 20px;width:80%" class="radio-group" v-if="chartShow">
+    <div style="margin-top: 20px;width:80%" class="radio-group">
       <el-radio-group v-model="stu" size="small" @change="select">
         <el-radio
           v-for="(item,index) in stuList"
@@ -20,6 +23,7 @@
         >{{item.truename}}</el-radio>
       </el-radio-group>
     </div>
+    <null-data v-if="!chartShow"></null-data>
   </div>
 </template>
 
@@ -48,6 +52,9 @@ export default {
     })
   },
   methods: {
+    downloadImg(){
+      this.$downloadChart("d1","学科走势")
+    },
     select(value) {
       subjectDirection({
         term: _this.term,
@@ -59,9 +66,9 @@ export default {
           let list = [];
           for (let item of res.data) {
             let obj = {};
-            obj.考试 = item.examName;
+            obj.考试 = item.examName+"."+item.createTime.substring(5,7)+"/"+item.createTime.substring(8,10);
             obj.city = item.subjectName.substr(2);
-            obj.分数 = item.score;
+            obj.年级名次 = item.gradeRank;
             list.push(obj);
           }
           console.log(list);
@@ -97,7 +104,7 @@ export default {
       const chart = new this.$G2.Chart({
         container: "d1",
         forceFit: true,
-        height: 400
+        height: 500
       });
       chart.source(data, {
         考试: {
@@ -109,13 +116,13 @@ export default {
           type: "line"
         }
       });
-      chart.axis("分数", {
+      chart.axis("年级名次", {
         label: {
           formatter: val => {
-            return val + "分";
+            return val + "名";
           }
         },
-        alias:"分数",
+        alias:"年级名次",
         title:{
           
         }
@@ -135,11 +142,11 @@ export default {
       })
       chart
         .line()
-        .position("考试*分数")
+        .position("考试*年级名次")
         .color("city");
       chart
         .point()
-        .position("考试*分数")
+        .position("考试*年级名次")
         .color("city")
         .size(4)
         .shape("circle")
@@ -147,16 +154,16 @@ export default {
           stroke: "#fff",
           lineWidth: 1
         });
+      chart.coord().rotate(0).scale(1, 1).reflect('考试');
+      // chart.coord().rotate(0).scale(1, 1).reflect('年级名次');
       chart.render();
-      if (this.type !== 1) {
-        _this.$nextTick(() => {
-          if (document.getElementById("d1").children.length > 1) {
-            document
-              .getElementById("d1")
-              .removeChild(document.getElementById("d1").firstChild);
-          }
-        });
-      }
+      _this.$nextTick(() => {
+        if (document.getElementById("d1").children.length > 1) {
+          document
+            .getElementById("d1")
+            .removeChild(document.getElementById("d1").firstChild);
+        }
+      });
     }
   },
   created() {

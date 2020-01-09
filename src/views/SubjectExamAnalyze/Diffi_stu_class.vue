@@ -62,6 +62,7 @@ export default {
         examId: this.examInfo.id,
         subjectId: this.subject
       }).then(res => {
+        if(res.code==="0000"){
         if (res.data.length === 0 || res.data === null) {
           this.chartShow = false;
           this.$message.warning("暂无数据");
@@ -88,14 +89,14 @@ export default {
           _this.$nextTick(() => {
             this.setChart("d1", this.absoluteList);
           });
-        }
+        }}
       });
     },
     setChart(dom, data) {
       const chart = new this.$G2.Chart({
         container: dom,
         forceFit: true,
-        height: 400
+        height: 500
       });
       chart.clear();
       chart.source(data, {

@@ -11,10 +11,10 @@ const routerPush = Router.prototype.push;
 
 Router.prototype.replace = function replace(location, onResolve, onReject) {
   if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
-  return originalReplace.call(this, location).catch(err => err)
+  return originalReplace.call(this, location)//.catch(err => err)
 }
 Router.prototype.push = function push(location) {
-  return routerPush.call(this, location).catch(error=> error)
+  return routerPush.call(this, location)//.catch(error=> error)
 }
 
 Vue.use(Router)

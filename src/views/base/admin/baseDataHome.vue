@@ -16,7 +16,7 @@
               trigger="hover">
               <div class="nav-c">
                 <div class="nav-box" v-for="(item,index) in permissionList" :key="index" @click="$router.push(item.url)">
-                  <img :src="imgHolder" alt="">
+                  <img :src="item.icon" alt="">
                   <h4>{{item.name}}</h4>
                 </div>
               </div>
@@ -33,7 +33,7 @@
     </div>
     <div class="section-con">
       <div class="section-left">
-          <Menu :theme="theme2"  accordion   :active-name='permissionList[0].child[0].url'>
+          <Menu :theme="theme2"  accordion :active-name="value">
             <template v-for="item in permissionList[0].child" >
               <MenuItem  :name="item.url" :key="'item.id' + item.url" :to="item.url">
                 <span class="layout-text" :key="'item.id' + item.url">{{ item.name }}</span>
@@ -43,30 +43,6 @@
               <span class="layout-text" >注册</span>
             </MenuItem> -->
           </Menu>
-          
-          <!-- <Menu :theme="theme2" :open-names="['1']" accordion @on-select="testToPage" >
-              <Submenu name="1">
-                  <template slot="title">
-                      <Icon type="ios-paper" />
-                      账号管理
-                  </template>
-                  <MenuItem name="1-1" >学校列表</MenuItem>
-                  <MenuItem name="1-4">省级管理员</MenuItem>
-                  <MenuItem name="1-5">市级管理员</MenuItem>
-                  <MenuItem name="1-6">区/县级管理员</MenuItem>
-                  
-              </Submenu>
-              <Submenu name="2">
-                  <template slot="title">
-                      <Icon type="ios-paper" />
-                      学校账号管理
-                  </template>
-                  <MenuItem name="2-1" >年级管理</MenuItem>
-                  <MenuItem name="2-2">学生列表</MenuItem>
-                  <MenuItem name="2-3">教师列表</MenuItem>
-              </Submenu>
-              <MenuItem name="3-1" >班级设置</MenuItem>
-          </Menu> -->
 
       </div>  
       <!-- 右侧内容 -->
@@ -85,16 +61,14 @@ import { mapState } from "vuex"
 import userFlag from "@/components/User"
 import { blankURL,routeToTitle } from "@/utils/blankRoute"
 
-
 export default {
   name:'baseData',
   data(){
     return{
-      imgHolder:"https://via.placeholder.com/75x30?text=75 x 30",
       title:"",
       theme2: 'light',
       menuList:[],
-      value:'/register'
+      value:'',
     }
   },
   methods:{
@@ -108,12 +82,17 @@ export default {
 
   },
   watch:{
-
+    $route: {
+      handler: function(route) {
+        this.value=route.path
+      },
+      immediate: true
+    }
   },
   created(){
     // console.log(this.userInfo)
-    this.imgHolder = this.userInfo.pic;
-    this.$router.push(this.permissionList[0].child[0].url);
+    // this.$router.push(this.permissionList[0].child[0].url);
+    
   },
   mounted(){
   },
@@ -221,7 +200,8 @@ $main_blue:#409EFF;
   text-align: center;
   cursor: pointer;
   img{
-    width: 60px;
+    width: 40px;
+    height: 40px;
     margin: 0 10px 0 0;
   }
   h4{
